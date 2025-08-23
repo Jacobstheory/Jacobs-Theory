@@ -1,0 +1,6 @@
+theme: jekyll-theme-cayman
+title: "Jacob's Theory"
+description: "The timeline they never wanted written."
+markdown: kramdown
+kramdown:
+  input: GFM
