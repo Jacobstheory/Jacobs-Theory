@@ -1,94 +1,108 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jacob’s Theory — Phase 1: The Fall</title>
-  <style>
-    :root{
-      --bg:#0f1115;--panel:#141821;--ink:#e8eaf0;--muted:#a9b0be;
-      --accent:#66d9ef;--accent-2:#8be9a8;--border:#212634;
-      --link:#8bd5ff;--link-hover:#bce8ff;--active:#1e2635;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-      display:grid; grid-template-columns:300px 1fr; gap:0; min-height:100%;
-    }
-    /* Sidebar */
-    aside{
-      position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
-      background:var(--panel); border-right:1px solid var(--border); padding:14px 12px;
-    }
-    .brand{font-weight:700; letter-spacing:.2px; margin:0 0 10px}
-    .hint{color:var(--muted); font-size:.85rem; margin:2px 0 12px}
-    .controls{display:flex; gap:8px; margin-bottom:10px}
-    .btn{
-      background:transparent; color:var(--muted); border:1px solid var(--border);
-      padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem;
-    }
-    .btn:hover{color:var(--ink); border-color:#2a3244}
-    .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
-    nav ul{list-style:none; margin:0; padding:0}
-    nav li{margin:0; padding:0}
-    .node{
-      display:flex; align-items:center; gap:6px; width:100%;
-      padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent;
-    }
-    .node:hover{background:#161c25}
-    .node.active{background:var(--active); border-color:#263043}
-    .node .chev{
-      width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;
-      color:var(--muted); transition:transform .15s ease;
-    }
-    .collapsed>.chev{transform:rotate(-90deg)}
-    .node a{
-      color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .node a:hover{color:var(--link-hover)}
-    .level-1{margin-left:0}
-    .level-2{margin-left:14px}
-    .level-3{margin-left:28px}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jacob’s Theory — Phase 1: The Fall</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#141821; --ink:#e8eef0; --muted:#98a0be;
+    --accent:#66d9ef; --accent-2:#88e0a8; --border:#21263f; --link:#8bd5ff;
+    --link-hover:#cbe8ff; --active:#12e6f3;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    display:grid; grid-template-columns:320px 1fr; gap:0; min-height:100%;
+  }
 
-    /* Content */
-    main{padding:34px 40px; max-width:1100px}
-    main h1, main h2, main h3{scroll-margin-top:18px}
-    main a{color:var(--accent)}
-    hr{border:0; border-top:1px solid var(--border); margin:26px 0}
+  /* Sidebar */
+  aside{
+    position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
+    background:var(--panel); border-right:1px solid var(--border); padding:14px 12px;
+  }
+  .brand{font-weight:700; letter-spacing:.2px; margin:0 0 10px}
+  .hint{color:var(--muted); font-size:.85rem; margin:.25rem 0 12px}
+  .controls{display:flex; gap:8px; margin-bottom:10px}
+  .btn{
+    background:transparent; color:var(--muted); border:1px solid var(--border);
+    padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem;
+  }
+  .btn:hover{color:var(--ink); border-color:#23a3d4}
+  input#filter{
+    width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:#0c0f18; color:var(--ink); margin:8px 0; outline:none;
+  }
 
-    /* Responsive */
-    @media (max-width: 880px){
-      body{grid-template-columns:1fr}
-      aside{position:static; height:auto}
-    }
+  nav ul{list-style:none; margin:0; padding:0}
+  nav li{margin:2px 0; padding:0}
+  nav a{display:block; padding:6px 10px; border-radius:8px; color:var(--link); text-decoration:none}
+  nav a:hover{color:var(--link-hover)}
+  .toc-parent > a{font-weight:600}
+  .node{display:flex; align-items:center; gap:6px}
+  .twist{
+    background:#0c0f18; border:1px solid var(--border); color:#9ab0d2;
+    width:22px; height:22px; border-radius:6px; display:inline-grid; place-content:center;
+    font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    cursor:pointer; user-select:none;
+  }
+  .collapsed > .twist{transform:rotate(-90deg)}
+  ul[hidden]{display:none !important}
 
-    /* Small highlight line on active heading */
-    .anchor-highlight{
-      position:relative;
-    }
-    .anchor-highlight::before{
-      content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px; background:var(--accent-2); border-radius:3px; opacity:.4;
-    }
-  </style>
+  /* Main content */
+  main{
+    padding:32px clamp(24px, 4vw, 48px);
+    max-width:1100px;
+  }
+  main h1{
+    margin-top:28px; padding-top:6px; border-top:3px solid #1c2338;
+    font-size: clamp(1.7rem, 3vw, 2.1rem);
+  }
+  main h2{margin-top:24px; font-size: clamp(1.25rem, 2.2vw, 1.4rem)}
+  main h3{margin-top:18px; font-size:1.05rem; color:#cfd8ff}
+
+  /* Active link highlight */
+  .active > a{
+    background:#0b1330; outline:1px solid #1c2b60;
+    box-shadow:0 0 0 1px #0e2244 inset, 0 0 0 1px #1c2b60;
+    color:#def3ff;
+  }
+
+  /* subtle highlight line on active heading */
+  .anchor-highlight{
+    position:relative;
+  }
+  .anchor-highlight::before{
+    content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px;
+    background:var(--accent-2); border-radius:3px; opacity:.4;
+  }
+
+  hr{border:none; border-top:1px solid var(--border); margin:12px 0 8px}
+</style>
 </head>
 <body>
   <aside>
     <h3 class="brand">Contents</h3>
     <p class="hint">Auto-grouped by H1 → H2 → H3</p>
-    <input id="filter" class="filter" placeholder="Filter headings…" aria-label="Filter headings">
+
+    <input id="filter" class="filter" placeholder="Filter headings…" aria-label="Filter headings" />
+
     <div class="controls">
       <button class="btn" id="expandAll" type="button">Expand all</button>
       <button class="btn" id="collapseAll" type="button">Collapse all</button>
     </div>
+
     <nav id="toc" aria-label="Table of contents"><ul></ul></nav>
 
-     <hr>
-  <h3>Downloads</h3>
-  <ul>
-    <li><a href="Jacobs Theory - Phase 1 The Fall.pdf" download>📕 Download PDF</a></li>
-    <li><a href="Jacobs Theory - Phase 1 The Fall - Unknown.epub" download>📖 Download EPUB</a></li>
-  </ul>
+    <hr>
+    <h3>Downloads</h3>
+    <ul class="downloads">
+      <!-- Uses your current filenames (with spaces URL-encoded) -->
+      <li><a href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall.pdf" target="_blank" download>📕 Download PDF</a></li>
+      <li><a href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall%20-%20Unknown.epub" target="_blank" download>📖 Download EPUB</a></li>
+    </ul>
   </aside>
 
   <main id="content">
@@ -96,155 +110,209 @@
     <p style="color:var(--muted)">Loading content…</p>
   </main>
 
-  <script>
-  (async function(){
-    // 1) Load your book content
-    const host = document.getElementById('content');
-    try{
-      const resp = await fetch('content.html', {cache:'no-store'});
-      const html = await resp.text();
-      host.innerHTML = html;
-    }catch(e){
-      host.innerHTML = "<p style='color:#f88'>Could not load content.html</p>";
-      return;
+<script>
+(async function(){
+  // 1) Load your book content
+  const host = document.getElementById('content');
+  try{
+    const resp = await fetch('content.html', {cache:'no-store'});
+    const html = await resp.text();
+    host.innerHTML = html;
+  }catch(e){
+    host.innerHTML = `<p style="color:#f88">Could not load content.html</p>`;
+    return;
+  }
+
+  // 2) Collect headings (visual order)
+  const headings = Array.from(host.querySelectorAll('h1, h2, h3'))
+    .filter(h => h.textContent.trim().length);
+
+  // Ensure each heading has an id (for linking)
+  headings.forEach((h, i) => {
+    if(!h.id){
+      h.id = h.textContent.trim().toLowerCase()
+        .replace(/[^\w]+/g,'-').replace(/(^-|-$)/g,'') || ('sec-' + i);
     }
+  });
 
-    // 2) Collect H1/H2/H3 in visual order
-    const headings = Array.from(host.querySelectorAll('h1, h2, h3'))
-      .filter(h => h.textContent.trim().length);
+  // Add a small visual anchor cue to each heading region
+  headings.forEach(h => h.classList.add('anchor-highlight'));
 
-    // Ensure each heading has a stable unique ID (re-use if present)
-    const slugCounts = new Map();
-    function slugify(str){
-      const base = str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-      const c = slugCounts.get(base) || 0; slugCounts.set(base, c+1);
-      return c ? `${base}-${c}` : base;
+  // 3) Build nested TOC (H1 -> H2 -> H3)
+  const toc = document.getElementById('toc');
+  const rootUL = toc.querySelector('ul');
+  let currentH1LI = null, currentH2LI = null;
+
+  function makeLI(h, level){
+    const li = document.createElement('li');
+    li.classList.add('toc-level-' + level);
+
+    const a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.trim();
+
+    if(level < 3){
+      // build folding node
+      const wrap = document.createElement('div');
+      wrap.className = 'node toc-parent';
+      const twist = document.createElement('span');
+      twist.className = 'twist';
+      twist.textContent = '▾';
+      wrap.appendChild(twist);
+      wrap.appendChild(a);
+      li.appendChild(wrap);
+
+      const ul = document.createElement('ul');
+      li.appendChild(ul);
+    }else{
+      li.appendChild(a);
     }
-    headings.forEach(h=>{
-      if(!h.id){ h.id = slugify(h.textContent.trim()); }
-    });
+    return li;
+  }
 
-    // 3) Build a nested tree from heading levels
-    function levelOf(h){ return +h.tagName.substring(1); } // 1,2,3
-    const root = { children:[], level:0, text:'ROOT', id:null };
-    let stack = [root];
-    headings.forEach(h=>{
-      const L = levelOf(h);
-      const node = { level:L, text:h.textContent.trim(), id:h.id, children:[] };
-      // pop until parent suitable
-      while(stack.length && stack.at(-1).level >= L){ stack.pop(); }
-      stack.at(-1).children.push(node);
-      stack.push(node);
-    });
+  headings.forEach(h => {
+    const level = h.tagName === 'H1' ? 1 : h.tagName === 'H2' ? 2 : 3;
+    if(level === 1){
+      currentH1LI = makeLI(h, 1);
+      rootUL.appendChild(currentH1LI);
+      currentH2LI = null;
+    }else if(level === 2){
+      if(!currentH1LI){
+        currentH1LI = document.createElement('li');
+        const ul = document.createElement('ul');
+        currentH1LI.appendChild(ul);
+        rootUL.appendChild(currentH1LI);
+      }
+      const ul = currentH1LI.querySelector('ul');
+      currentH2LI = makeLI(h, 2);
+      ul.appendChild(currentH2LI);
+    }else{
+      // H3
+      const parent = currentH2LI || currentH1LI;
+      if(!parent){
+        // fallback
+        currentH1LI = makeLI(h, 1);
+        rootUL.appendChild(currentH1LI);
+      }
+      const ul = (currentH2LI || currentH1LI).querySelector('ul') || (() => {
+        const u = document.createElement('ul');
+        (currentH2LI || currentH1LI).appendChild(u);
+        return u;
+      })();
+      ul.appendChild(makeLI(h, 3));
+    }
+  });
 
-    // 4) Render the TOC with collapsible groups
-    const toc = document.getElementById('toc').firstElementChild; // the UL
-    function renderList(parentUl, nodes, level){
-      nodes.forEach(node=>{
-        const li = document.createElement('li');
-        const row = document.createElement('div');
-        row.className = `node level-${Math.min(level,3)}`;
+  // 4) Toggle folding on click
+  rootUL.addEventListener('click', e => {
+    const twist = e.target.closest('.twist');
+    if(twist){
+      const node = twist.parentElement; // .node
+      node.classList.toggle('collapsed');
+      const ul = node.parentElement.querySelector(':scope > ul');
+      if(ul) ul.hidden = node.classList.contains('collapsed');
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
 
-        // Chevron for nodes that have children
-        let chev = null;
-        if(node.children.length){
-          chev = document.createElement('span');
-          chev.className = 'chev';
-          chev.innerHTML = '▾';
-          row.appendChild(chev);
-        }else{
-          const spacer = document.createElement('span');
-          spacer.style.width='16px';
-          row.appendChild(spacer);
-        }
-
-        const a = document.createElement('a');
-        a.href = '#'+node.id; a.textContent = node.text;
-        row.appendChild(a);
-
-        li.appendChild(row);
-        parentUl.appendChild(li);
-
-        if(node.children.length){
-          const childUl = document.createElement('ul');
-          childUl.style.margin=0; childUl.style.padding=0; childUl.hidden = false;
-          li.appendChild(childUl);
-
-          // toggle collapse
-          row.addEventListener('click', (ev)=>{
-            // avoid double handling when clicking link (let it navigate)
-            if(ev.target.tagName.toLowerCase() === 'a') return;
-            childUl.hidden = !childUl.hidden;
-            row.classList.toggle('collapsed', childUl.hidden);
-          });
-
-          renderList(childUl, node.children, level+1);
-        }
+  // 5) Filter headings (group aware)
+  const filter = document.getElementById('filter');
+  filter.addEventListener('input', () => {
+    const q = filter.value.trim().toLowerCase();
+    // For each top-level group (H1 LI)
+    rootUL.querySelectorAll(':scope > li').forEach(group => {
+      const groupTxt = (group.querySelector(':scope > .toc-parent a')?.textContent || '').toLowerCase();
+      const children = Array.from(group.querySelectorAll(':scope > ul > li'));
+      const childMatches = children.filter(li => {
+        const a = li.querySelector('a');
+        return a && a.textContent.toLowerCase().includes(q);
       });
-    }
-    renderList(toc, root.children, 1);
+      const hit = !q || groupTxt.includes(q) || childMatches.length > 0;
 
-    // 5) Filter headings
-    const filter = document.getElementById('filter');
-    filter.addEventListener('input', ()=>{
-      const q = filter.value.trim().toLowerCase();
-      for(const li of toc.querySelectorAll('li')){
-        const text = li.querySelector('a')?.textContent.toLowerCase() || '';
-        const match = text.includes(q);
-        li.style.display = match ? '' : 'none';
+      // show/hide group
+      group.style.display = hit ? '' : 'none';
+
+      // show only matching children when there’s a query
+      if(q){
+        children.forEach(li => {
+          const txt = (li.querySelector('a')?.textContent || '').toLowerCase();
+          li.style.display = txt.includes(q) ? '' : 'none';
+        });
+        // auto-open when filtering to reveal matches
+        const node = group.querySelector(':scope > .toc-parent');
+        const ul = group.querySelector(':scope > ul');
+        if(node && ul && hit){
+          node.classList.remove('collapsed');
+          ul.hidden = false;
+        }
+      }else{
+        // clear per-child display state
+        children.forEach(li => li.style.display = '');
       }
     });
+  });
 
-    // 6) Expand / Collapse all
-    document.getElementById('expandAll').addEventListener('click', ()=>{
-      toc.querySelectorAll('ul').forEach(ul=>ul.hidden=false);
-      toc.querySelectorAll('.node').forEach(n=>n.classList.remove('collapsed'));
-    });
-    document.getElementById('collapseAll').addEventListener('click', ()=>{
-      // collapse only sub-lists (not top level)
-      toc.querySelectorAll(':scope > li > ul').forEach(ul=>{
-        // leave top-level open, collapse their children
-        ul.querySelectorAll('ul').forEach(sul=>sul.hidden=true);
-      });
-      toc.querySelectorAll('.node').forEach(n=>n.classList.add('collapsed'));
-      // remove collapsed on top-level rows
-      toc.querySelectorAll(':scope > li > .node').forEach(n=>n.classList.remove('collapsed'));
-    });
+  // 6) Expand / Collapse all
+  document.getElementById('expandAll').addEventListener('click', () => {
+    rootUL.querySelectorAll('ul').forEach(ul => ul.hidden = false);
+    rootUL.querySelectorAll('.node').forEach(n => n.classList.remove('collapsed'));
+  });
 
-    // 7) Active section highlight on scroll
-    const links = Array.from(toc.querySelectorAll('a'));
-    const byId = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
-    const obs = new IntersectionObserver(entries=>{
-      entries.forEach(e=>{
-        const id = e.target.id;
-        const a = byId.get(id);
-        if(!a) return;
-        if(e.isIntersecting){
-          links.forEach(x=>x.parentElement.classList.remove('active'));
-          a.parentElement.classList.add('active');
-        }
-      });
-    }, { rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
-    headings.forEach(h=>{
-      h.classList.add('anchor-highlight');
-      obs.observe(h);
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    // collapse only sub-lists (not the top level)
+    rootUL.querySelectorAll(':scope > li > ul').forEach(ul => {
+      ul.querySelectorAll('ul').forEach(sul => sul.hidden = true);
     });
+    rootUL.querySelectorAll(':scope > li > .node').forEach(n => n.classList.remove('collapsed'));
+  });
 
-    // 8) Smooth scroll
-    document.addEventListener('click', (e)=>{
-      const a = e.target.closest('a[href^="#"]');
+  // 7) Active section highlight on scroll (and auto-open parents)
+  const links = Array.from(rootUL.querySelectorAll('a'));
+  const byId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      const id = e.target.id;
+      const a = byId.get(id);
       if(!a) return;
-      const id = a.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if(target){
-        e.preventDefault();
-        target.scrollIntoView({behavior:'smooth', block:'start'});
-        history.replaceState(null, '', '#'+id);
+
+      const li = a.closest('li');
+      if(e.isIntersecting){
+        // clear all actives
+        rootUL.querySelectorAll('.active').forEach(n => n.classList.remove('active'));
+        li.classList.add('active');
+        // ensure its ancestors are open
+        li.closestAll = function(sel){
+          const out=[]; let el=this.parentElement;
+          while(el && el.matches){
+            if(el.matches(sel)) out.push(el);
+            el = el.parentElement;
+          }
+          return out;
+        };
+        // open any collapsed parents
+        let node = a.closest('.node');
+        if(node){
+          node.classList.remove('collapsed');
+          const u = node.parentElement.querySelector(':scope > ul');
+          if(u) u.hidden = false;
+        }
+        let p = li.parentElement.closest('li');
+        while(p){
+          const pn = p.querySelector(':scope > .node');
+          const pu = p.querySelector(':scope > ul');
+          if(pn && pu){ pn.classList.remove('collapsed'); pu.hidden = false; }
+          p = p.parentElement.closest('li');
+        }
       }
     });
-  })();
-  </script>
+  },{
+    rootMargin: '0px 0px -60% 0px',
+    threshold: [0, .33]
+  });
+
+  headings.forEach(h => obs.observe(h));
+})();
+</script>
 </body>
 </html>
-
-
