@@ -13,10 +13,14 @@
   }
   *{box-sizing:border-box}
 
-  /* === Static frame: only the content pane scrolls === */
-  html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--ink); margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif; }
+  /* Frame: only the content pane scrolls */
+  html, body {
+    height:100%; overflow:hidden; margin:0;
+    background:var(--bg); color:var(--ink);
+    font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  }
 
-  /* Fixed sidebar column */
+  /* Fixed sidebar */
   aside{
     position:fixed; left:0; top:0; bottom:0; width:300px;
     background:var(--panel); border-right:1px solid var(--border); padding:14px 12px;
@@ -25,7 +29,7 @@
   .brand{font-weight:700; letter-spacing:.2px; margin:0 0 6px}
   .hint{color:var(--muted); font-size:.85rem; margin:0 0 12px}
 
-  /* Downloads (simple text) */
+  /* Downloads (simple links) */
   .downloads{margin:10px 0 14px; border-bottom:1px solid var(--border); padding-bottom:8px}
   .downloads h4{margin:0 0 6px; font-size:.9rem; letter-spacing:.3px; color:#cfe3ff}
   .downloads ul{list-style:disc; padding-left:18px; margin:6px 0 0}
@@ -38,7 +42,7 @@
   .btn:hover{color:var(--ink); border-color:#2a3244}
   .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
 
-  /* TOC area scrolls inside sidebar */
+  /* TOC inside sidebar (scrolls independently) */
   nav#toc{flex:1; min-height:0; overflow:auto; padding-right:6px}
   nav ul{list-style:none; margin:0; padding:0}
   nav li{margin:0; padding:0}
@@ -53,31 +57,33 @@
   .level-2{margin-left:14px}
   .level-3{margin-left:28px}
 
-  /* Scrollable reading pane */
+  /* Fluid, capped reading pane (no right bar) */
   main{
     position:relative;
-    margin-left:300px;   /* same as aside width */
-    height:100vh;       /* fill viewport */
-    overflow:auto;      /* ONLY this scrolls */
-    padding:34px 40px; max-width:1100px;
+    margin-left:300px;                      /* aligns with fixed aside */
+    height:100vh; overflow:auto;            /* only this scrolls */
+    padding:34px 40px;
+
+    width:calc(100vw - 300px);              /* fill remaining width */
+    max-width:1200px;                       /* cap for readability */
+    margin-right:auto;                      /* center within space */
     scroll-behavior:smooth;
   }
   main h1, main h2, main h3{scroll-margin-top:18px}
   main a{color:var(--accent)}
   hr{border:0; border-top:1px solid var(--border); margin:26px 0}
-
-  /* Heading highlight line */
   .anchor-highlight{position:relative}
   .anchor-highlight::before{
     content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px;
     background:var(--accent-2); border-radius:3px; opacity:.4;
   }
 
-  /* Mobile: stack and let page scroll normally */
+  /* Mobile: stack and allow normal page scroll */
   @media (max-width:880px){
     html, body { overflow:auto; }
     aside{position:static; width:auto; height:auto}
-    main{margin-left:0; height:auto; overflow:visible}
+    nav#toc{max-height:50vh}
+    main{margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible}
   }
 </style>
 </head>
@@ -121,16 +127,16 @@
   }
 
   // Collect headings and ensure IDs
-  const headings = Array.from(host.querySelectorAll('h1, h2, h3')).filter(h=>h.textContent.trim());
+  const headings = Array.from(host.querySelectorAll('h1,h2,h3')).filter(h=>h.textContent.trim());
   const slugCounts = new Map();
-  const slugify = s => {
+  const slugify = s=>{
     const base = s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
     const n = slugCounts.get(base)||0; slugCounts.set(base,n+1);
     return n ? `${base}-${n}` : base;
   };
   headings.forEach(h=>{ if(!h.id) h.id = slugify(h.textContent.trim()); });
 
-  // Build H1>H2>H3 tree
+  // Build H1 > H2 > H3 tree
   const levelOf = h => +h.tagName.substring(1);
   const root = {children:[], level:0}; let stack=[root];
   headings.forEach(h=>{
@@ -140,38 +146,46 @@
   });
 
   // Render TOC
-  const tocUl=document.getElementById('toc').firstElementChild;
-  function render(nodes,level,parentUl){
+  const tocUl = document.getElementById('toc').firstElementChild;
+  function render(nodes, level, parentUl){
     nodes.forEach(node=>{
       const li=document.createElement('li');
       const row=document.createElement('div');
       row.className=`node level-${Math.min(level,3)}`;
 
       if(node.children.length){
-        const chev=document.createElement('span'); chev.className='chev'; chev.textContent='▾'; row.appendChild(chev);
+        const chev=document.createElement('span');
+        chev.className='chev'; chev.textContent='▾';
+        row.appendChild(chev);
       }else{
-        const spacer=document.createElement('span'); spacer.style.width='16px'; row.appendChild(spacer);
+        const spacer=document.createElement('span');
+        spacer.style.width='16px';
+        row.appendChild(spacer);
       }
 
-      const a=document.createElement('a'); a.href='#'+node.id; a.textContent=node.text; row.appendChild(a);
+      const a=document.createElement('a');
+      a.href='#'+node.id; a.textContent=node.text;
+      row.appendChild(a);
+
       li.appendChild(row); parentUl.appendChild(li);
 
       if(node.children.length){
         const childUl=document.createElement('ul'); childUl.hidden=false; li.appendChild(childUl);
-        row.addEventListener('click',ev=>{
+        row.addEventListener('click', ev=>{
           if(ev.target.tagName.toLowerCase()==='a') return;
-          childUl.hidden=!childUl.hidden; row.classList.toggle('collapsed', childUl.hidden);
+          childUl.hidden=!childUl.hidden;
+          row.classList.toggle('collapsed', childUl.hidden);
         });
-        render(node.children,level+1,childUl);
+        render(node.children, level+1, childUl);
       }
     });
   }
-  render(root.children,1,tocUl);
+  render(root.children, 1, tocUl);
 
-  // Filter (keeps parents visible if child matches)
-  const filter=document.getElementById('filter');
-  filter.addEventListener('input',()=>{
-    const q=filter.value.trim().toLowerCase();
+  // Filter (parents stay visible if a child matches)
+  const filter = document.getElementById('filter');
+  filter.addEventListener('input', ()=>{
+    const q = filter.value.trim().toLowerCase();
     function apply(ul){
       let any=false;
       Array.from(ul.children).forEach(li=>{
@@ -192,7 +206,7 @@
 
   // Expand / Collapse
   function eachLI(cb){
-    const rootUl = tocUl;
+    const rootUl=tocUl;
     Array.from(rootUl.querySelectorAll('li')).forEach(li=>{
       let row=null, childUl=null;
       for(const el of li.children){ if(el.classList?.contains('node')) row=el; if(el.tagName==='UL') childUl=el; }
@@ -200,10 +214,10 @@
       cb({li,row,childUl,isTop,rootUl});
     });
   }
-  document.getElementById('expandAll').addEventListener('click',()=>{
+  document.getElementById('expandAll').addEventListener('click', ()=>{
     eachLI(({row,childUl})=>{ if(childUl) childUl.hidden=false; if(row) row.classList.remove('collapsed'); });
   });
-  document.getElementById('collapseAll').addEventListener('click',()=>{
+  document.getElementById('collapseAll').addEventListener('click', ()=>{
     const rootUl=tocUl;
     rootUl.querySelectorAll('ul').forEach(ul=>{ if(ul!==rootUl) ul.hidden=true; });
     rootUl.querySelectorAll('li').forEach(li=>{
@@ -213,7 +227,7 @@
     });
   });
 
-  // Active-section highlight (use MAIN as the scroll container root)
+  // Active highlight (use MAIN as scroll root)
   const links=Array.from(tocUl.querySelectorAll('a'));
   const byId=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
   const obs=new IntersectionObserver(entries=>{
@@ -221,11 +235,11 @@
       const a=byId.get(e.target.id); if(!a) return;
       if(e.isIntersecting){ links.forEach(x=>x.parentElement.classList.remove('active')); a.parentElement.classList.add('active'); }
     });
-  },{root: document.getElementById('content'), rootMargin:'-40% 0px -55% 0px', threshold:[0,1]});
+  }, { root: document.getElementById('content'), rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
   headings.forEach(h=>{ h.classList.add('anchor-highlight'); obs.observe(h); });
 
-  // Smooth scroll stays inside MAIN (scroll-behavior CSS also helps)
-  document.addEventListener('click',e=>{
+  // Smooth in-pane scroll
+  document.addEventListener('click', e=>{
     const a=e.target.closest('a[href^="#"]'); if(!a) return;
     const id=a.getAttribute('href').slice(1);
     const t=document.getElementById(id);
