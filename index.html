@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jacob’s Theory — Phase 1: The Fall</title>
   <meta name="color-scheme" content="light dark" />
   <style>
-    :root {
-      --bg:#0f1115; --panel:#141821; --ink:#e8eaf0; --muted:#a9b0be;
-      --accent:#66d9ef; --accent-2:#8be9a8; --border:#212634;
-      --link:#8bd5ff; --link-hover:#bce8ff; --active:#1e2635;
-      --sidebar: clamp(240px, 22vw, 320px);
+    :root{
+      --bg:#0f1115;--panel:#141821;--ink:#e8eaf0;--muted:#a9b0be;
+      --accent:#66d9ef;--accent-2:#8be9a8;--border:#212634;
+      --link:#8bd5ff;--link-hover:#bce8ff;--active:#1e2635;
+      --sidebar: clamp(240px, 22vw, 320px);      /* fluid sidebar width */
     }
-    * { box-sizing:border-box }
+    *{box-sizing:border-box}
 
     /* Frame (desktop): window static; only main scrolls */
-    html, body {
+    html,body{
       height:100%;
       overflow:hidden;
       margin:0;
@@ -24,42 +24,42 @@
     }
 
     /* Sidebar */
-    aside {
+    aside{
       position:fixed; left:0; top:0; bottom:0; width:var(--sidebar);
       background:var(--panel); border-right:1px solid var(--border);
       padding:14px 12px; display:flex; flex-direction:column; overflow:hidden;
     }
-    .brand { font-weight:700; letter-spacing:.2px; margin:0 0 6px }
-    .hint { color:var(--muted); font-size:.85rem; margin:0 0 12px }
+    .brand{font-weight:700; letter-spacing:.2px; margin:0 0 6px}
+    .hint{color:var(--muted); font-size:.85rem; margin:0 0 12px}
 
-    /* Downloads */
-    .downloads { margin:10px 0 14px }
-    .downloads h4 { margin:0 0 6px; font-size:.9rem; letter-spacing:.3px; color:#cfe3ff }
-    .downloads ul { list-style:disc; padding-left:18px; margin:6px 0 0 }
-    .downloads a { color:var(--link); text-decoration:none }
-    .downloads a:hover { color:var(--link-hover); text-decoration:underline }
+    /* Downloads (simple links) */
+    .downloads{margin:10px 0 14px}
+    .downloads h4{margin:0 0 6px; font-size:.9rem; letter-spacing:.3px; color:#cfe3ff}
+    .downloads ul{list-style:disc; padding-left:18px; margin:6px 0 0}
+    .downloads a{color:var(--link); text-decoration:none}
+    .downloads a:hover{color:var(--link-hover); text-decoration:underline}
 
     /* Controls + filter */
-    .controls { display:flex; gap:8px; margin:10px 0; flex-wrap:wrap }
-    .btn { background:transparent; color:var(--muted); border:1px solid var(--border); padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem }
-    .btn:hover { color:var(--ink); border-color:#2a3244 }
-    .filter { width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px }
+    .controls{display:flex; gap:8px; margin:10px 0; flex-wrap:wrap}
+    .btn{background:transparent; color:var(--muted); border:1px solid var(--border); padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem}
+    .btn:hover{color:var(--ink); border-color:#2a3244}
+    .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
 
     /* TOC */
-    nav#toc { flex:1; min-height:0; overflow:auto; padding-right:6px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain }
-    nav ul { list-style:none; margin:0; padding:0 }
-    nav li { margin:0; padding:0 }
-    .node { display:flex; align-items:center; gap:6px; width:100%; padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent }
-    .node:hover { background:#161c25 }
-    .node.active { background:var(--active); border-color:#263043 }
-    .node .chev { width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .15s }
-    .collapsed>.chev { transform:rotate(-90deg) }
-    .node a { color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-    .node a:hover { color:var(--link-hover) }
-    .level-1 { margin-left:0 } .level-2 { margin-left:14px } .level-3 { margin-left:28px }
+    nav#toc{flex:1; min-height:0; overflow:auto; padding-right:6px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
+    nav ul{list-style:none; margin:0; padding:0}
+    nav li{margin:0; padding:0}
+    .node{display:flex; align-items:center; gap:6px; width:100%; padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent}
+    .node:hover{background:#161c25}
+    .node.active{background:var(--active); border-color:#263043}
+    .node .chev{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .15s}
+    .collapsed>.chev{transform:rotate(-90deg)}
+    .node a{color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .node a:hover{color:var(--link-hover)}
+    .level-1{margin-left:0} .level-2{margin-left:14px} .level-3{margin-left:28px}
 
-    /* Content pane */
-    main {
+    /* Content pane: fill remaining width (no right bar); only this scrolls */
+    main{
       position:relative;
       margin-left:var(--sidebar);
       height:100svh; overflow:auto; -webkit-overflow-scrolling:touch;
@@ -68,29 +68,27 @@
       max-width:none; margin-right:0;
       scroll-behavior:smooth;
     }
-    @supports (height: 100dvh) {
-      main { height:100dvh; }
-    }
-    main h1, main h2, main h3 { scroll-margin-top:18px }
-    main a { color:var(--accent) }
-    hr { border:0; border-top:1px solid var(--border); margin:26px 0 }
+    main h1,main h2,main h3{scroll-margin-top:18px}
+    main a{color:var(--accent)}
+    hr{border:0; border-top:1px solid var(--border); margin:26px 0}
 
     /* Heading highlight line */
-    .anchor-highlight { position:relative }
-    .anchor-highlight::before { content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px; background:var(--accent-2); border-radius:3px; opacity:.4 }
+    .anchor-highlight{position:relative}
+    .anchor-highlight::before{content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px; background:var(--accent-2); border-radius:3px; opacity:.4}
 
-    /* Auto stacked mode */
+    /* Auto stacked mode when narrow (variable-based) */
     @media (max-width: calc(700px + var(--sidebar))) {
-      html,body { overflow:auto }
-      aside { position:static; width:auto; height:auto }
-      nav#toc { max-height:50vh }
-      main { margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible }
+      html,body{overflow:auto}
+      aside{position:static; width:auto; height:auto}
+      nav#toc{max-height:50vh}
+      main{margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible}
     }
+    /* Fallback stacked mode for older mobile browsers (no CSS var math in MQ) */
     @media (max-width: 1024px) {
-      html,body { overflow:auto }
-      aside { position:static; width:auto; height:auto }
-      nav#toc { max-height:50vh }
-      main { margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible }
+      html,body{overflow:auto}
+      aside{position:static; width:auto; height:auto}
+      nav#toc{max-height:50vh}
+      main{margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible}
     }
   </style>
 </head>
@@ -132,6 +130,7 @@
     return;
   }
 
+  /* Gather headings and ensure stable IDs */
   const headings = Array.from(host.querySelectorAll('h1,h2,h3')).filter(h=>h.textContent.trim());
   const slugCounts = new Map();
   const slugify = s=>{
@@ -141,16 +140,18 @@
   };
   headings.forEach(h=>{ if(!h.id) h.id = slugify(h.textContent.trim()); });
 
+  /* Build H1 > H2 > H3 tree */
   const levelOf = h => +h.tagName.substring(1);
   const root = {children:[], level:0}; let stack=[root];
   headings.forEach(h=>{
     const L = levelOf(h);
     const node = {level:L, text:h.textContent.trim(), id:h.id, children:[]};
-    while(stack.length && stack[stack.length - 1].level >= L) stack.pop();
-    stack[stack.length - 1].children.push(node);
+    while(stack.length && stack.at(-1).level >= L) stack.pop();
+    stack.at(-1).children.push(node);
     stack.push(node);
   });
 
+  /* Render TOC */
   const tocUl = document.getElementById('toc').firstElementChild;
   function render(nodes, level, parentUl){
     nodes.forEach(node=>{
@@ -177,7 +178,7 @@
         const childUl = document.createElement('ul');
         childUl.hidden = false; li.appendChild(childUl);
         row.addEventListener('click', ev=>{
-          if(ev.target.tagName.toLowerCase()==='a') return;
+          if(ev.target.tagName.toLowerCase()==='a') return; // let links navigate
           childUl.hidden = !childUl.hidden;
           row.classList.toggle('collapsed', childUl.hidden);
         });
@@ -187,6 +188,7 @@
   }
   render(root.children, 1, tocUl);
 
+  /* Filter (keeps parents if child matches) */
   const filter = document.getElementById('filter');
   filter.addEventListener('input', ()=>{
     const q = filter.value.trim().toLowerCase();
@@ -208,15 +210,19 @@
     apply(tocUl);
   });
 
+  /* Expand All */
   document.getElementById('expandAll').addEventListener('click', ()=>{
     tocUl.querySelectorAll('ul').forEach(ul=>ul.hidden=false);
     tocUl.querySelectorAll('.node').forEach(row=>row.classList.remove('collapsed'));
   });
 
+  /* Collapse All → show ONLY H1 rows (hide every nested UL) */
   document.getElementById('collapseAll').addEventListener('click', ()=>{
+    // hide all child ULs (including each H1's direct UL)
     tocUl.querySelectorAll('ul').forEach(ul=>{
       if(ul!==tocUl) ul.hidden = true;
     });
+    // set chevrons to collapsed for anything that has children
     tocUl.querySelectorAll('li').forEach(li=>{
       let row=null, directUl=null;
       for(const el of li.children){
@@ -227,6 +233,7 @@
     });
   });
 
+  /* Active-section highlight — use main as root when it scrolls; else window */
   function getScrollRoot(){
     const style=getComputedStyle(host);
     const mainScrolls=(host.scrollHeight>host.clientHeight) && (style.overflowY==='auto' || style.overflowY==='scroll');
@@ -245,9 +252,10 @@
   }, { root:getScrollRoot(), rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
   headings.forEach(h=>{ h.classList.add('anchor-highlight'); observer.observe(h); });
 
+  /* Smooth scroll that picks correct scroller (main vs window) */
   (function(){
     function scrollToEl(el){
-      const root = getScrollRoot();
+      const root = getScrollRoot();  // null => window
       const offset = 12;
       if(root){
         const top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - offset;
