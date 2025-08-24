@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jacob’s Theory — Phase 1: The Fall</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f1115; --panel:#151922; --panel-2:#1c2230; --text:#e6e8ee; --muted:#a8b0bd;
+      --border:#222937; --accent:#7cc4ff; --accent-2:#9be58c;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    }
+
+    /* Layout */
+    #wrap{display:grid; grid-template-columns:280px 1fr; min-height:100vh}
+    #sidebar{
+      position:sticky; top:0; height:100vh; overflow:auto;
+      background:var(--panel); border-right:1px solid var(--border);
+      padding:16px 14px;
+    }
+    #content{
+      padding:32px 28px; max-width:900px;
+    }
+
+    /* Sidebar */
+    .logo{font-weight:800; letter-spacing:.2px; margin:2px 0 14px; color:#fff}
+    .small{color:var(--muted); font-size:12px; margin-top:-6px; margin-bottom:10px}
+    .search{
+      width:100%; padding:10px 12px; margin-bottom:10px;
+      border:1px solid var(--border); border-radius:8px; background:var(--panel-2);
+      color:var(--text);
+    }
+    #toc{margin:8px 0}
+    .toc-group{margin:6px 0 4px}
+    .toc-parent{
+      display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px;
+      cursor:pointer; user-select:none; color:#fff; font-weight:600; background:transparent;
+    }
+    .toc-parent:hover{background:#1d2534}
+    .caret{transition:transform .2s ease}
+    .collapsed .caret{transform:rotate(-90deg)}
+    .toc-children{margin-left:14px; border-left:1px solid var(--border); padding-left:10px}
+    .toc-children a{display:block; padding:5px 6px; border-radius:6px}
+    a{color:var(--text); text-decoration:none}
+    a:hover{color:#fff}
+    .active > a{color:var(--accent)}
+
+    /* Content */
+    #content h1, #content h2, #content h3{scroll-margin-top:90px}
+    #content h1{font-size:1.9rem; margin:2.2rem 0 0.8rem}
+    #content h2{font-size:1.35rem; margin:1.8rem 0 0.6rem; color:#fff}
+    #content h3{font-size:1.05rem; margin:1.2rem 0 0.4rem; color:#d9dfeb}
+    #content p{color:var(--text)}
+    #content hr{border:0; border-top:1px solid var(--border); margin:1.5rem 0}
+
+    /* Top bar (mobile) */
+    #topbar{
+      display:none; position:sticky; top:0; z-index:5; backdrop-filter:saturate(180%) blur(8px);
+      background:rgba(13,16,22,.7); border-bottom:1px solid var(--border);
+      padding:10px 14px; align-items:center; gap:10px;
+    }
+    #menuBtn{
+      border:1px solid var(--border); background:var(--panel-2); color:var(--text);
+      padding:8px 10px; border-radius:8px; cursor:pointer;
+    }
+
+    /* Mobile */
+    @media (max-width: 950px){
+      #wrap{grid-template-columns:1fr}
+      #topbar{display:flex}
+      #sidebar{
+        position:fixed; left:0; top:48px; bottom:0; width:80vw; max-width:360px;
+        transform:translateX(-100%); transition:transform .2s ease;
+        box-shadow:0 10px 30px rgba(0,0,0,.35);
+      }
+      #sidebar.open{transform:translateX(0)}
+      #content{padding:22px 18px; max-width:800px}
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <button id="menuBtn">☰ Menu</button>
+    <div style="font-weight:700;color:#fff">Jacob’s Theory — Phase 1</div>
+  </div>
+
+  <div id="wrap">
+    <aside id="sidebar">
+      <div class="logo">Contents</div>
+      <div class="small">Auto-generated from your headings</div>
+      <input class="search" id="tocFilter" placeholder="Filter headings…" />
+      <nav id="toc"></nav>
+    </aside>
+
+    <main id="content">
+      <!-- Your book will be injected here from content.html -->
+      <p style="color:var(--muted)">Loading…</p>
+    </main>
+  </div>
+
+  <script>
+  (async () => {
+    // 1) Load your exported HTML (upload it as `content.html` in the same repo)
+    const resp = await fetch('content.html', {cache:'no-store'});
+    const raw = await resp.text();
+
+    // 2) Extract only the <body> content and inject into #content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(raw, 'text/html');
+    const body = doc.body ? doc.body.innerHTML : raw;
+    const content = document.getElementById('content');
+    content.innerHTML = body;
+
+    // 3) Build the TOC from H1/H2/H3
+    const SKIP_FIRST_H1 = true;  // hide title H1 in TOC
+    const TOP_LEVEL = ['H1','H2'];
+    const SUB_LEVEL = ['H3'];
+
+    // ensure every heading has an id
+    const headings = [...content.querySelectorAll('h1, h2, h3')];
+    if (SKIP_FIRST_H1 && headings[0]?.tagName === 'H1') headings.shift();
+
+    const slug = s => s.toLowerCase()
+      .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
+
+    headings.forEach(h => { if (!h.id) h.id = slug(h.textContent); });
+
+    // group H3s under the nearest preceding H1/H2
+    const groups = [];
+    let current = null;
+    headings.forEach(h => {
+      if (TOP_LEVEL.includes(h.tagName)) {
+        current = { el:h, children:[] };
+        groups.push(current);
+      } else if (SUB_LEVEL.includes(h.tagName)) {
+        if (!current) { current = { el:h, children:[] }; groups.push(current); }
+        current.children.push(h);
+      }
+    });
+
+    // render TOC
+    const toc = document.getElementById('toc');
+    groups.forEach(g => {
+      const wrap = document.createElement('div');
+      wrap.className = 'toc-group' + (g.children.length ? '' : ' collapsed');
+
+      const parent = document.createElement('div');
+      parent.className = 'toc-parent';
+      parent.innerHTML = `<span class="caret">▸</span><a href="#${g.el.id}">${g.el.textContent}</a>`;
+      wrap.appendChild(parent);
+
+      const kids = document.createElement('div');
+      kids.className = 'toc-children';
+      g.children.forEach(c => {
+        const a = document.createElement('a');
+        a.href = '#' + c.id;
+        a.textContent = c.textContent;
+        kids.appendChild(a);
+      });
+      wrap.appendChild(kids);
+
+      parent.addEventListener('click', e => {
+        if (e.target.tagName !== 'A') wrap.classList.toggle('collapsed');
+      });
+
+      toc.appendChild(wrap);
+    });
+
+    // active section highlighting
+    const map = {};
+    toc.querySelectorAll('a').forEach(a => map[a.getAttribute('href').slice(1)] = a);
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(({target,isIntersecting}) => {
+        const a = map[target.id];
+        if (!a) return;
+        const node = a.parentElement.classList.contains('toc-parent') ? a.parentElement : a.parentElement;
+        (isIntersecting ? node.classList.add : node.classList.remove).call(node.classList,'active');
+      });
+    }, { rootMargin: '-30% 0px -60% 0px', threshold:[0,1] });
+    headings.forEach(h => obs.observe(h));
+
+    // filter
+    const filter = document.getElementById('tocFilter');
+    filter.addEventListener('input', () => {
+      const q = filter.value.toLowerCase();
+      toc.querySelectorAll('.toc-group').forEach(group => {
+        const txt = group.querySelector('.toc-parent a').textContent.toLowerCase();
+        const matchesTop = txt.includes(q);
+        const children = [...group.querySelectorAll('.toc-children a')];
+        const matchesChild = children.some(a => a.textContent.toLowerCase().includes(q));
+        group.style.display = (q ? (matchesTop || matchesChild) : '') ? '' : 'none';
+        if (q && matchesChild) group.classList.remove('collapsed');
+      });
+    });
+
+    // Smooth scroll + hash update
+    toc.addEventListener('click', e => {
+      if (e.target.tagName === 'A') {
+        e.preventDefault();
+        const id = e.target.getAttribute('href').slice(1);
+        document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+        history.replaceState(null,'','#'+id);
+      }
+    });
+
+    // Mobile menu
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    // close sidebar after clicking a link on mobile
+    toc.addEventListener('click', e => {
+      if (e.target.tagName === 'A') sidebar.classList.remove('open');
+    });
+  })();
+  </script>
+</body>
+</html>
