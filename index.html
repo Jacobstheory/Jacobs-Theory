@@ -24,8 +24,7 @@
     position:sticky; top:0; height:100vh;
     background:var(--panel); border-right:1px solid var(--border);
     padding:14px 12px;
-    display:flex; flex-direction:column;
-    overflow:hidden;              /* IMPORTANT: let nav scroll inside */
+    display:flex; flex-direction:column; overflow:hidden;
   }
   .brand{font-weight:700; letter-spacing:.2px; margin:0 0 6px}
   .hint{color:var(--muted); font-size:.85rem; margin:0 0 12px}
@@ -161,6 +160,7 @@
 
       if(node.children.length){
         const childUl=document.createElement('ul');childUl.hidden=false;li.appendChild(childUl);
+        // Toggle collapse on row click (not the link)
         row.addEventListener('click',ev=>{
           if(ev.target.tagName.toLowerCase()==='a') return;
           childUl.hidden=!childUl.hidden;
@@ -172,7 +172,7 @@
   }
   render(root.children,1,tocUl);
 
-  // Filter (keep parents visible if child matches)
+  // Filter (keeps parents visible if a child matches)
   const filter=document.getElementById('filter');
   filter.addEventListener('input',()=>{
     const q=filter.value.trim().toLowerCase();
@@ -194,7 +194,7 @@
     apply(tocUl);
   });
 
-  // Helpers for reliable expand/collapse
+  // Expand / Collapse helpers (robust, no :scope)
   function rowAndChild(li){
     let row=null, childUl=null;
     for (const el of li.children){
@@ -220,11 +220,23 @@
     });
   });
 
-  // Collapse all (keep top-level open)
+  // Collapse all → show only H1s (root items)
   document.getElementById('collapseAll').addEventListener('click', () => {
-    eachLI(({row, childUl, isTop}) => {
-      if (childUl) childUl.hidden = !isTop;           // hide sublists; keep top visible
-      if (row) row.classList.toggle('collapsed', !isTop && !!childUl);
+    const rootUl = tocUl;
+
+    // Hide every nested UL under the root (all H2/H3 lists)
+    rootUl.querySelectorAll('ul').forEach(ul => {
+      if (ul !== rootUl) ul.hidden = true;
+    });
+
+    // Update chevrons: rows that have a child list get "collapsed"
+    rootUl.querySelectorAll('li').forEach(li => {
+      let row=null, childUl=null;
+      for (const el of li.children){
+        if (el.classList && el.classList.contains('node')) row = el;
+        if (el.tagName === 'UL') childUl = el;
+      }
+      if (row) row.classList.toggle('collapsed', !!childUl);
     });
   });
 
