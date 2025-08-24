@@ -1,187 +1,413 @@
-<script>
-(async function () {
-  // ---- 1) Load content.html into <main id="content">
-  const host = document.getElementById('content');
-  try {
-    const resp = await fetch('content.html', { cache: 'no-store' });
-    const html = await resp.text();
-    host.innerHTML = html;
-  } catch (e) {
-    host.innerHTML = `<p style="color:#f88">Could not load content.html</p>`;
-    return;
-  }
-
-  // ---- 2) Collect H1/H2/H3 headings
-  const headings = Array.from(host.querySelectorAll('h1, h2, h3'))
-    .filter(h => h.textContent.trim().length);
-
-  // Ensure each heading has an id
-  headings.forEach(h => {
-    if (!h.id) {
-      h.id = h.textContent.trim()
-        .toLowerCase()
-        .replace(/[^\w]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Jacob’s Theory — Index</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{
+      --bg: #0b0c0f;
+      --panel: #11131a;
+      --elev: #171a23;
+      --text: #e8ecf1;
+      --muted:#a7b0bd;
+      --link:#79b8ff;
+      --accent:#3b82f6;
+      --border:#252a36;
+      --shadow: 0 8px 24px rgba(0,0,0,0.25);
+      --radius: 14px;
     }
-  });
-
-  // ---- 3) Build nested UL for ToC
-  const toc = document.getElementById('toc').querySelector('ul');
-  toc.innerHTML = ''; // reset
-
-  // Utility to create a link item
-  const liFor = (h) => {
-    const li = document.createElement('li');
-    li.className = 'node';
-    const a = document.createElement('a');
-    a.href = `#${h.id}`;
-    a.textContent = h.textContent.trim();
-    li.appendChild(a);
-    return li;
-  };
-
-  // We’ll keep stacks for H1 > H2 > H3
-  let currentH1UL = toc;        // top-level <ul>
-  let currentH2UL = null;       // inside a given H1
-  let currentH3UL = null;       // inside a given H2
-
-  let lastH1LI = null;
-  let lastH2LI = null;
-
-  headings.forEach(h => {
-    const level = h.tagName === 'H1' ? 1 : h.tagName === 'H2' ? 2 : 3;
-
-    if (level === 1) {
-      const li = liFor(h);
-      li.classList.add('toc-parent');
-      currentH1UL.appendChild(li);
-      lastH1LI = li;
-
-      // fresh level-2 UL under this H1
-      currentH2UL = document.createElement('ul');
-      li.appendChild(currentH2UL);
-      // reset level-3
-      currentH3UL = null;
-      lastH2LI = null;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; display:flex; min-height:100%;
+      background:linear-gradient(180deg, #0b0c0f 0%, #0e1117 100%);
+      color:var(--text); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    /* Layout */
+    .sidebar{
+      width:320px; max-width:90vw; padding:18px;
+      background:linear-gradient(180deg, var(--panel) 0%, var(--elev) 100%);
+      border-right:1px solid var(--border);
+      position:sticky; top:0; height:100vh; overflow:auto;
+      box-shadow:var(--shadow);
+    }
+    .main{
+      flex:1; min-width:0; padding:28px clamp(18px,4vw,48px);
+    }
+    /* Header */
+    .brand{
+      display:flex; align-items:center; gap:12px; margin-bottom:14px;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:10px;
+      background: radial-gradient(120% 120% at 20% 20%, #3b82f6 0%, #8b5cf6 45%, #11131a 100%);
+      border:1px solid var(--border);
+      box-shadow: inset 0 0 24px rgba(255,255,255,.06);
+    }
+    .brand h1{
+      font-size:18px; letter-spacing:.3px; margin:0;
+    }
+    .muted{color:var(--muted); font-size:13px}
+    /* Downloads card */
+    .card{
+      background:linear-gradient(180deg, #0f1320 0%, #0f141c 100%);
+      border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px;
+    }
+    .card h2{font-size:14px; margin:0 0 10px 0; letter-spacing:.4px; text-transform:uppercase; color:#cfe3ff}
+    .dl-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 12px; border-radius:12px; border:1px solid var(--border);
+      background:#121826; text-decoration:none; color:var(--text); font-weight:600; font-size:14px;
+    }
+    .btn:hover{background:#182035}
+    .btn .tag{font-weight:600; font-size:12px; color:#cfe3ff; opacity:.9}
+    .btn.block{display:flex; width:100%}
+    /* Controls */
+    .controls{display:flex; gap:8px; margin:10px 0 14px}
+    .chip{
+      padding:8px 10px; font-size:13px; border-radius:999px; border:1px solid var(--border);
+      background:#121826; color:var(--text); cursor:pointer; user-select:none;
+    }
+    .chip:hover{background:#182035}
+    /* Search */
+    .search{
+      position:relative; margin:10px 0 14px;
+    }
+    .search input{
+      width:100%; padding:11px 12px 11px 36px; border-radius:12px; border:1px solid var(--border);
+      background:#0e121b; color:var(--text); outline:none;
+    }
+    .search svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.7}
+    /* Nav tree */
+    nav{display:block}
+    details{
+      border:1px solid var(--border);
+      background:#0b0f18; border-radius:12px; padding:8px 10px; margin-bottom:10px;
+    }
+    details[open]{background:#0d1220}
+    summary{
+      cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; font-weight:700;
+    }
+    summary::-webkit-details-marker{display:none}
+    .twisty{transition:transform .2s ease}
+    details[open] .twisty{transform:rotate(90deg)}
+    .children{padding:8px 0 0 22px}
+    .children a{display:block; padding:6px 4px; border-radius:8px; font-size:14px}
+    .children a:hover{background:#141a2a; text-decoration:none}
+    .small{font-size:12px; color:var(--muted)}
+    /* Topbar (mobile) */
+    .topbar{
+      display:none; position:sticky; top:0; z-index:10; background:linear-gradient(180deg, #0b0c0f 0%, #0e1117 100%);
+      border-bottom:1px solid var(--border); padding:10px 12px; align-items:center; justify-content:space-between;
+    }
+    .hamburger{
+      appearance:none; border:1px solid var(--border); background:#121826; color:var(--text);
+      padding:8px 10px; border-radius:10px; font-weight:700;
+    }
+    @media (max-width: 920px){
+      .sidebar{position:fixed; left:-100%; transition:left .25s ease; z-index:20}
+      .sidebar.open{left:0}
+      .topbar{display:flex}
+      .main{padding-top:10px}
+      body{overflow-x:hidden}
+    }
+    /* Content placeholder */
+    .content-card{
+      max-width:1100px; margin:0 auto; background:linear-gradient(180deg, #0f1320 0%, #0f141c 100%);
+      border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow)
+    }
+    h2.section{margin:0 0 10px 0}
+    .kicker{color:#cfe3ff; text-transform:uppercase; letter-spacing:.4px; font-size:13px}
+  </style>
+</head>
+<body>
+  <!-- Mobile topbar -->
+  <div class="topbar">
+    <button class="hamburger" aria-controls="sidebar" aria-expanded="false">☰ Menu</button>
+    <div style="font-weight:700">Jacob’s Theory</div>
+  </div>
 
-    if (level === 2) {
-      // must be inside a H1
-      if (!currentH2UL) {
-        // If there was no H1 before, attach to root
-        currentH2UL = toc;
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Navigation">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Jacob’s Theory</h1>
+        <div class="muted">Master Index & Downloads</div>
+      </div>
+    </div>
+
+    <!-- Downloads AT TOP -->
+    <section class="card" aria-labelledby="downloads-title">
+      <h2 id="downloads-title">Downloads</h2>
+      <div class="dl-grid">
+        <a class="btn" href="Jacobs-Theory-v1.pdf" download>
+          <span>PDF</span> <span class="tag">v1</span>
+        </a>
+        <a class="btn" href="Jacobs-Theory-v1.epub" download>
+          <span>EPUB</span> <span class="tag">v1</span>
+        </a>
+        <a class="btn" href="Jacobs-Theory.md" download>
+          <span>Markdown</span>
+        </a>
+        <a class="btn" href="Jacobs-Theory-Archive.zip" download>
+          <span>ZIP</span> <span class="tag">full</span>
+        </a>
+      </div>
+      <div class="small" style="margin-top:8px">
+        Files are provided free for critique and archiving. If you mirror, preserve integrity.
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <div class="controls" role="group" aria-label="Expand controls">
+      <button class="chip" id="expandAll">Expand All</button>
+      <button class="chip" id="collapseAll">Collapse All</button>
+      <button class="chip" id="remember">Save Open State</button>
+      <button class="chip" id="clearRemember">Clear State</button>
+    </div>
+
+    <!-- Search -->
+    <label class="search" aria-label="Filter sections">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input id="filter" type="search" placeholder="Filter parts & chapters…" autocomplete="off" />
+    </label>
+
+    <!-- NAV TREE -->
+    <nav id="nav">
+      <!-- Foreword / Orientation -->
+      <details data-title="Foreword & Reader Orientation" open>
+        <summary><span class="twisty">▶</span> Foreword & Reader Orientation</summary>
+        <div class="children">
+          <a href="foreword.html">New Foreword (Solar System Hypothesis)</a>
+          <a href="orientation.html">Reader Orientation & Method</a>
+          <a href="definitions.html">Definitions & Terms (Resonance Model)</a>
+        </div>
+      </details>
+
+      <!-- Part 1 -->
+      <details data-title="Part 1 — The Primordial Earth (~Billions – 65 Ma)">
+        <summary><span class="twisty">▶</span> PART 1 — The Primordial Earth <span class="small">(~Billions – 65 Ma)</span></summary>
+        <div class="children">
+          <a href="part-1.html#world-before-fracture">The World Before the Fracture</a>
+          <a href="part-1.html#oxygen-pressure">Atmosphere: Oxygen & Pressure</a>
+          <a href="part-1.html#geomagnetism">Geomagnetic Coherence & Superchrons</a>
+          <a href="part-1.html#telluric">Telluric Fields & Resonance</a>
+          <a href="part-1.html#evidence">Cross-Disciplinary Evidence</a>
+        </div>
+      </details>
+
+      <!-- Part 2 -->
+      <details data-title="Part 2 — The Great Impact (Chicxulub as Rupture)">
+        <summary><span class="twisty">▶</span> PART 2 — The Great Impact <span class="small">(Chicxulub as Rupture)</span></summary>
+        <div class="children">
+          <a href="part-2.html#impact-sequence">Impact Sequence & Global Effects</a>
+          <a href="part-2.html#field-collapse">Field Collapse & Reversal Patterns</a>
+          <a href="part-2.html#tectonics">Triggering Mobile Tectonics</a>
+          <a href="part-2.html#ocean-memory">Ocean Memory & Geochemistry</a>
+        </div>
+      </details>
+
+      <!-- Part 3 -->
+      <details data-title="Part 3 — Emergence & Ascent (~300 ka – 13 ka)">
+        <summary><span class="twisty">▶</span> PART 3 — Emergence & Ascent <span class="small">(~300 ka – 13 ka)</span></summary>
+        <div class="children">
+          <a href="part-3.html#underground">Underground Refuges & Adaptation</a>
+          <a href="part-3.html#sensory">Loss of Resonance, Birth of Speech</a>
+          <a href="part-3.html#genetic-traces">Genetic & Neurological Traces</a>
+          <a href="part-3.html#sea-sages">Sea Sages & Knowledge Return</a>
+        </div>
+      </details>
+
+      <!-- Part 4 -->
+      <details data-title="Part 4 — Younger Dryas Cataclysm (~12.8 ka)">
+        <summary><span class="twisty">▶</span> PART 4 — Younger Dryas Cataclysm <span class="small">(~12.8 ka)</span></summary>
+        <div class="children">
+          <a href="part-4.html#sequence">Event Sequence & Aftermath</a>
+          <a href="part-4.html#architecture">Surviving Architecture & Repurposing</a>
+          <a href="part-4.html#mythic">Mythic Records & Cross-Parallels</a>
+        </div>
+      </details>
+
+      <!-- Part 5 -->
+      <details data-title="Part 5 — Mesopotamia, Babylon & Sumer">
+        <summary><span class="twisty">▶</span> PART 5 — Mesopotamia, Babylon & Sumer</summary>
+        <div class="children">
+          <a href="part-5.html#rise">Rise from Ruin (Comparative Model)</a>
+          <a href="part-5.html#law">Law, Control Systems & Memory</a>
+          <a href="part-5.html#comparative">Mainstream vs Resonance Tables</a>
+        </div>
+      </details>
+
+      <!-- Part 6 -->
+      <details data-title="Part 6 — Egypt (Mainstream vs Resonance)">
+        <summary><span class="twisty">▶</span> PART 6 — Egypt <span class="small">(Mainstream vs Resonance)</span></summary>
+        <div class="children">
+          <a href="part-6.html#inheritance">Inheritance vs Original Build</a>
+          <a href="part-6.html#energy">Frequency Architecture & Energy</a>
+          <a href="part-6.html#evidence">Material & Symbolic Evidence</a>
+        </div>
+      </details>
+
+      <!-- Part 7 -->
+      <details data-title="Part 7 — Greece, Druids, Rome → Modern Control">
+        <summary><span class="twisty">▶</span> PART 7 — Greece, Druids, Rome → Modern Control</summary>
+        <div class="children">
+          <a href="part-7.html#transition">Transition to Overt Control</a>
+          <a href="part-7.html#rewrite">Cultural Rewrites & Fires</a>
+          <a href="part-7.html#industrial">Industrial Era & Memory Erasure</a>
+        </div>
+      </details>
+
+      <!-- Appendices -->
+      <details data-title="Appendices, Tables & Citations">
+        <summary><span class="twisty">▶</span> Appendices, Tables & Citations</summary>
+        <div class="children">
+          <a href="appendix.html#tables">Comparison Tables</a>
+          <a href="appendix.html#citations">Citations Index</a>
+          <a href="appendix.html#method">Methods & Notes</a>
+        </div>
+      </details>
+
+      <!-- Legal / Mirrors -->
+      <details data-title="Mirrors & Archiving">
+        <summary><span class="twisty">▶</span> Mirrors & Archiving</summary>
+        <div class="children">
+          <a href="mirrors.html#how-to">How to Mirror Safely</a>
+          <a href="mirrors.html#checksums">Checksums & Integrity</a>
+        </div>
+      </details>
+    </nav>
+
+    <div class="muted" style="margin-top:12px">
+      Tip: Use “Expand All” to scan the whole structure, then “Save Open State” to remember what you’re working on.
+    </div>
+  </aside>
+
+  <!-- Main content (placeholder) -->
+  <main class="main" id="content">
+    <div class="content-card">
+      <div class="kicker">Index</div>
+      <h2 class="section">Jacob’s Theory — Master Index</h2>
+      <p>
+        This page is the single source of truth for navigation and downloads.
+        The left panel is sticky on desktop and can be opened with the menu button on mobile.
+      </p>
+      <p>
+        Update links in the sidebar as you finalize chapter filenames/anchors.
+        If your previous “collapse button” didn’t work, this build uses native
+        <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> so it’s reliable without heavy JS.
+      </p>
+      <ul>
+        <li><strong>Downloads at top</strong> of the sidebar ✅</li>
+        <li><strong>Expand/Collapse All</strong> works reliably ✅</li>
+        <li><strong>Filter</strong> quickly narrows parts/chapters ✅</li>
+        <li><strong>Mobile menu</strong> toggle with remembered state ✅</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    // Mobile sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const ham = document.querySelector('.hamburger');
+    const NAV_STATE_KEY = 'jt_sidebar_open';
+    function setSidebar(open){
+      sidebar.classList.toggle('open', open);
+      if(ham){ ham.setAttribute('aria-expanded', String(open)); }
+      try{ localStorage.setItem(NAV_STATE_KEY, open ? '1' : '0'); }catch(e){}
+    }
+    // Restore sidebar open state on load (mobile)
+    (function(){
+      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(NAV_STATE_KEY) : null;
+      const preferOpen = saved === '1';
+      if (window.matchMedia('(max-width: 920px)').matches) {
+        setSidebar(preferOpen);
       }
-      const li = liFor(h);
-      li.classList.add('toc-parent');
-      currentH2UL.appendChild(li);
-      lastH2LI = li;
-
-      // fresh level-3 UL under this H2
-      currentH3UL = document.createElement('ul');
-      li.appendChild(currentH3UL);
+    })();
+    if (ham){
+      ham.addEventListener('click', () => setSidebar(!sidebar.classList.contains('open')));
     }
 
-    if (level === 3) {
-      // must be inside a H2
-      let ul = currentH3UL;
-      if (!ul) {
-        // fallback to last H2, else root
-        ul = lastH2LI?.querySelector('ul') || toc;
-        currentH3UL = ul;
+    // Expand/Collapse All for details
+    const expandBtn = document.getElementById('expandAll');
+    const collapseBtn = document.getElementById('collapseAll');
+    const rememberBtn = document.getElementById('remember');
+    const clearRememberBtn = document.getElementById('clearRemember');
+    const detailsNodes = () => Array.from(document.querySelectorAll('nav details'));
+
+    function openAll(){ detailsNodes().forEach(d => d.open = true); }
+    function closeAll(){ detailsNodes().forEach(d => d.open = false); }
+
+    expandBtn?.addEventListener('click', openAll);
+    collapseBtn?.addEventListener('click', closeAll);
+
+    // Remember open/closed state
+    const STATE_KEY = 'jt_details_state_v1';
+    function saveState(){
+      const state = detailsNodes().map((d,i) => d.open ? 1 : 0);
+      try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }catch(e){}
+    }
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STATE_KEY);
+        if(!raw) return;
+        const arr = JSON.parse(raw);
+        detailsNodes().forEach((d,i) => { if(typeof arr[i] !== 'undefined') d.open = !!arr[i]; });
+      }catch(e){}
+    }
+    rememberBtn?.addEventListener('click', saveState);
+    clearRememberBtn?.addEventListener('click', () => { try{ localStorage.removeItem(STATE_KEY); }catch(e){} });
+
+    // Apply any remembered state on load
+    document.addEventListener('DOMContentLoaded', loadState);
+
+    // Filter parts/chapters
+    const filterInput = document.getElementById('filter');
+    filterInput?.addEventListener('input', () => {
+      const q = filterInput.value.trim().toLowerCase();
+      const nodes = detailsNodes();
+      if(!q){
+        nodes.forEach(d => { d.style.display=''; });
+        return;
       }
-      const li = liFor(h);
-      ul.appendChild(li);
-    }
-  });
+      nodes.forEach(d => {
+        const title = (d.dataset.title || d.textContent || '').toLowerCase();
+        const match = title.includes(q);
+        // Also search child links
+        let childMatch = false;
+        d.querySelectorAll('.children a').forEach(a => {
+          const ok = (a.textContent || '').toLowerCase().includes(q);
+          a.style.display = ok ? '' : 'none';
+          if(ok) childMatch = true;
+        });
+        d.style.display = (match || childMatch) ? '' : 'none';
+        // Auto-open matching groups for visibility
+        d.open = match || childMatch;
+      });
+    });
 
-  // ---- 4) Toggle open/closed on parent clicks (but not on link clicks)
-  const wrap = document.querySelector('aside');
-  toc.addEventListener('click', (e) => {
-    if (e.target.closest('a')) return; // don’t toggle when clicking a link
-    const parent = e.target.closest('.toc-parent');
-    if (!parent) return;
-    const childUL = parent.querySelector(':scope > ul');
-    if (!childUL) return;
-    const isHidden = childUL.hidden === true;
-    childUL.hidden = !isHidden;
-    parent.classList.toggle('collapsed', !isHidden);
-  });
-
-  // Start with all children collapsed (keep top level open)
-  toc.querySelectorAll(':scope > li > ul').forEach(ul => {
-    ul.hidden = true;
-    ul.parentElement.classList.add('collapsed');
-  });
-
-  // ---- 5) Filter (hides groups that don’t match, but keeps tree structure)
-  const filter = document.getElementById('filter');
-  filter.addEventListener('input', () => {
-    const q = filter.value.trim().toLowerCase();
-    // Show all if no query
-    if (!q) {
-      toc.querySelectorAll('li').forEach(li => li.style.display = '');
-      return;
-    }
-
-    // test each group + their children
-    toc.querySelectorAll('.toc-parent').forEach(group => {
-      const label = group.querySelector(':scope > a')?.textContent.toLowerCase() || '';
-      const hitsTop = label.includes(q);
-      const children = group.querySelectorAll(':scope > ul > li');
-      const hitsChild = Array.from(children).some(li =>
-        li.querySelector('a')?.textContent.toLowerCase().includes(q)
-      );
-      group.style.display = (hitsTop || hitsChild) ? '' : 'none';
-      // If child matched, open the group so matches are visible
-      if (hitsChild) {
-        const ul = group.querySelector(':scope > ul');
-        if (ul) {
-          ul.hidden = false;
-          group.classList.remove('collapsed');
+    // Smooth scrolling for same-page anchors (if used)
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if(el){
+          e.preventDefault();
+          el.scrollIntoView({behavior:'smooth', block:'start'});
+          history.pushState(null,'','#'+id);
         }
-      }
+      });
     });
-
-    // also test leaf li’s under any level-2 ULs
-    toc.querySelectorAll('li:not(.toc-parent)').forEach(li => {
-      const txt = li.querySelector('a')?.textContent.toLowerCase() || '';
-      li.style.display = txt.includes(q) ? '' : 'none';
-    });
-  });
-
-  // ---- 6) Expand / Collapse all (only sub-lists, top-level stays visible)
-  const expandAllBtn  = document.getElementById('expandAll');
-  const collapseAllBtn = document.getElementById('collapseAll');
-
-  expandAllBtn.addEventListener('click', () => {
-    toc.querySelectorAll(':scope > li > ul, :scope > li > ul ul').forEach(ul => ul.hidden = false);
-    toc.querySelectorAll('.toc-parent').forEach(li => li.classList.remove('collapsed'));
-  });
-
-  collapseAllBtn.addEventListener('click', () => {
-    // collapse only the immediate children of H1 (and their descendants)
-    toc.querySelectorAll(':scope > li > ul').forEach(ul => ul.hidden = true);
-    toc.querySelectorAll(':scope > li > ul ul').forEach(ul => ul.hidden = true);
-    toc.querySelectorAll('.toc-parent').forEach(li => li.classList.add('collapsed'));
-  });
-
-  // ---- 7) Active section highlight on scroll
-  const links = Array.from(toc.querySelectorAll('a'));
-  const byId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(({ target, isIntersecting }) => {
-      const a = byId.get(target.id);
-      if (!a) return;
-      const node = a.parentElement;
-      if (isIntersecting) {
-        node.classList.add('active');
-      } else {
-        node.classList.remove('active');
-      }
-    });
-  }, { rootMargin: '0px 0px -60% 0px', threshold: [0, 1] });
-
-  headings.forEach(h => obs.observe(h));
-
-})();
-</script>
+  </script>
+</body>
+</html>
