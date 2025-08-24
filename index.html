@@ -1,224 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Jacob’s Theory — Phase 1: The Fall</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jacob’s Theory — Phase 1: The Fall</title>
   <style>
     :root{
-      --bg:#0f1115; --panel:#151922; --panel-2:#1c2230; --text:#e6e8ee; --muted:#a8b0bd;
-      --border:#222937; --accent:#7cc4ff; --accent-2:#9be58c;
+      --bg:#0f1115;--panel:#141821;--ink:#e8eaf0;--muted:#a9b0be;
+      --accent:#66d9ef;--accent-2:#8be9a8;--border:#212634;
+      --link:#8bd5ff;--link-hover:#bce8ff;--active:#1e2635;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background:var(--bg); color:var(--text);
-      font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      display:grid; grid-template-columns:300px 1fr; gap:0; min-height:100%;
     }
-
-    /* Layout */
-    #wrap{display:grid; grid-template-columns:280px 1fr; min-height:100vh}
-    #sidebar{
-      position:sticky; top:0; height:100vh; overflow:auto;
-      background:var(--panel); border-right:1px solid var(--border);
-      padding:16px 14px;
-    }
-    #content{
-      padding:32px 28px; max-width:900px;
-    }
-
     /* Sidebar */
-    .logo{font-weight:800; letter-spacing:.2px; margin:2px 0 14px; color:#fff}
-    .small{color:var(--muted); font-size:12px; margin-top:-6px; margin-bottom:10px}
-    .search{
-      width:100%; padding:10px 12px; margin-bottom:10px;
-      border:1px solid var(--border); border-radius:8px; background:var(--panel-2);
-      color:var(--text);
+    aside{
+      position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
+      background:var(--panel); border-right:1px solid var(--border); padding:14px 12px;
     }
-    #toc{margin:8px 0}
-    .toc-group{margin:6px 0 4px}
-    .toc-parent{
-      display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px;
-      cursor:pointer; user-select:none; color:#fff; font-weight:600; background:transparent;
+    .brand{font-weight:700; letter-spacing:.2px; margin:0 0 10px}
+    .hint{color:var(--muted); font-size:.85rem; margin:2px 0 12px}
+    .controls{display:flex; gap:8px; margin-bottom:10px}
+    .btn{
+      background:transparent; color:var(--muted); border:1px solid var(--border);
+      padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem;
     }
-    .toc-parent:hover{background:#1d2534}
-    .caret{transition:transform .2s ease}
-    .collapsed .caret{transform:rotate(-90deg)}
-    .toc-children{margin-left:14px; border-left:1px solid var(--border); padding-left:10px}
-    .toc-children a{display:block; padding:5px 6px; border-radius:6px}
-    a{color:var(--text); text-decoration:none}
-    a:hover{color:#fff}
-    .active > a{color:var(--accent)}
+    .btn:hover{color:var(--ink); border-color:#2a3244}
+    .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
+    nav ul{list-style:none; margin:0; padding:0}
+    nav li{margin:0; padding:0}
+    .node{
+      display:flex; align-items:center; gap:6px; width:100%;
+      padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent;
+    }
+    .node:hover{background:#161c25}
+    .node.active{background:var(--active); border-color:#263043}
+    .node .chev{
+      width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;
+      color:var(--muted); transition:transform .15s ease;
+    }
+    .collapsed>.chev{transform:rotate(-90deg)}
+    .node a{
+      color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .node a:hover{color:var(--link-hover)}
+    .level-1{margin-left:0}
+    .level-2{margin-left:14px}
+    .level-3{margin-left:28px}
 
     /* Content */
-    #content h1, #content h2, #content h3{scroll-margin-top:90px}
-    #content h1{font-size:1.9rem; margin:2.2rem 0 0.8rem}
-    #content h2{font-size:1.35rem; margin:1.8rem 0 0.6rem; color:#fff}
-    #content h3{font-size:1.05rem; margin:1.2rem 0 0.4rem; color:#d9dfeb}
-    #content p{color:var(--text)}
-    #content hr{border:0; border-top:1px solid var(--border); margin:1.5rem 0}
+    main{padding:34px 40px; max-width:1100px}
+    main h1, main h2, main h3{scroll-margin-top:18px}
+    main a{color:var(--accent)}
+    hr{border:0; border-top:1px solid var(--border); margin:26px 0}
 
-    /* Top bar (mobile) */
-    #topbar{
-      display:none; position:sticky; top:0; z-index:5; backdrop-filter:saturate(180%) blur(8px);
-      background:rgba(13,16,22,.7); border-bottom:1px solid var(--border);
-      padding:10px 14px; align-items:center; gap:10px;
-    }
-    #menuBtn{
-      border:1px solid var(--border); background:var(--panel-2); color:var(--text);
-      padding:8px 10px; border-radius:8px; cursor:pointer;
+    /* Responsive */
+    @media (max-width: 880px){
+      body{grid-template-columns:1fr}
+      aside{position:static; height:auto}
     }
 
-    /* Mobile */
-    @media (max-width: 950px){
-      #wrap{grid-template-columns:1fr}
-      #topbar{display:flex}
-      #sidebar{
-        position:fixed; left:0; top:48px; bottom:0; width:80vw; max-width:360px;
-        transform:translateX(-100%); transition:transform .2s ease;
-        box-shadow:0 10px 30px rgba(0,0,0,.35);
-      }
-      #sidebar.open{transform:translateX(0)}
-      #content{padding:22px 18px; max-width:800px}
+    /* Small highlight line on active heading */
+    .anchor-highlight{
+      position:relative;
+    }
+    .anchor-highlight::before{
+      content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px; background:var(--accent-2); border-radius:3px; opacity:.4;
     }
   </style>
 </head>
 <body>
-  <div id="topbar">
-    <button id="menuBtn">☰ Menu</button>
-    <div style="font-weight:700;color:#fff">Jacob’s Theory — Phase 1</div>
-  </div>
+  <aside>
+    <h3 class="brand">Contents</h3>
+    <p class="hint">Auto-grouped by H1 → H2 → H3</p>
+    <input id="filter" class="filter" placeholder="Filter headings…" aria-label="Filter headings">
+    <div class="controls">
+      <button class="btn" id="expandAll" type="button">Expand all</button>
+      <button class="btn" id="collapseAll" type="button">Collapse all</button>
+    </div>
+    <nav id="toc" aria-label="Table of contents"><ul></ul></nav>
+  </aside>
 
-  <div id="wrap">
-    <aside id="sidebar">
-      <div class="logo">Contents</div>
-      <div class="small">Auto-generated from your headings</div>
-      <input class="search" id="tocFilter" placeholder="Filter headings…" />
-      <nav id="toc"></nav>
-    </aside>
-
-    <main id="content">
-      <!-- Your book will be injected here from content.html -->
-      <p style="color:var(--muted)">Loading…</p>
-    </main>
-  </div>
+  <main id="content">
+    <!-- Loaded dynamically from content.html -->
+    <p style="color:var(--muted)">Loading content…</p>
+  </main>
 
   <script>
-  (async () => {
-    // 1) Load your exported HTML (upload it as `content.html` in the same repo)
-    const resp = await fetch('content.html', {cache:'no-store'});
-    const raw = await resp.text();
+  (async function(){
+    // 1) Load your book content
+    const host = document.getElementById('content');
+    try{
+      const resp = await fetch('content.html', {cache:'no-store'});
+      const html = await resp.text();
+      host.innerHTML = html;
+    }catch(e){
+      host.innerHTML = "<p style='color:#f88'>Could not load content.html</p>";
+      return;
+    }
 
-    // 2) Extract only the <body> content and inject into #content
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(raw, 'text/html');
-    const body = doc.body ? doc.body.innerHTML : raw;
-    const content = document.getElementById('content');
-    content.innerHTML = body;
+    // 2) Collect H1/H2/H3 in visual order
+    const headings = Array.from(host.querySelectorAll('h1, h2, h3'))
+      .filter(h => h.textContent.trim().length);
 
-    // 3) Build the TOC from H1/H2/H3
-    const SKIP_FIRST_H1 = true;  // hide title H1 in TOC
-    const TOP_LEVEL = ['H1','H2'];
-    const SUB_LEVEL = ['H3'];
-
-    // ensure every heading has an id
-    const headings = [...content.querySelectorAll('h1, h2, h3')];
-    if (SKIP_FIRST_H1 && headings[0]?.tagName === 'H1') headings.shift();
-
-    const slug = s => s.toLowerCase()
-      .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
-
-    headings.forEach(h => { if (!h.id) h.id = slug(h.textContent); });
-
-    // group H3s under the nearest preceding H1/H2
-    const groups = [];
-    let current = null;
-    headings.forEach(h => {
-      if (TOP_LEVEL.includes(h.tagName)) {
-        current = { el:h, children:[] };
-        groups.push(current);
-      } else if (SUB_LEVEL.includes(h.tagName)) {
-        if (!current) { current = { el:h, children:[] }; groups.push(current); }
-        current.children.push(h);
-      }
+    // Ensure each heading has a stable unique ID (re-use if present)
+    const slugCounts = new Map();
+    function slugify(str){
+      const base = str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+      const c = slugCounts.get(base) || 0; slugCounts.set(base, c+1);
+      return c ? `${base}-${c}` : base;
+    }
+    headings.forEach(h=>{
+      if(!h.id){ h.id = slugify(h.textContent.trim()); }
     });
 
-    // render TOC
-    const toc = document.getElementById('toc');
-    groups.forEach(g => {
-      const wrap = document.createElement('div');
-      wrap.className = 'toc-group' + (g.children.length ? '' : ' collapsed');
+    // 3) Build a nested tree from heading levels
+    function levelOf(h){ return +h.tagName.substring(1); } // 1,2,3
+    const root = { children:[], level:0, text:'ROOT', id:null };
+    let stack = [root];
+    headings.forEach(h=>{
+      const L = levelOf(h);
+      const node = { level:L, text:h.textContent.trim(), id:h.id, children:[] };
+      // pop until parent suitable
+      while(stack.length && stack.at(-1).level >= L){ stack.pop(); }
+      stack.at(-1).children.push(node);
+      stack.push(node);
+    });
 
-      const parent = document.createElement('div');
-      parent.className = 'toc-parent';
-      parent.innerHTML = `<span class="caret">▸</span><a href="#${g.el.id}">${g.el.textContent}</a>`;
-      wrap.appendChild(parent);
+    // 4) Render the TOC with collapsible groups
+    const toc = document.getElementById('toc').firstElementChild; // the UL
+    function renderList(parentUl, nodes, level){
+      nodes.forEach(node=>{
+        const li = document.createElement('li');
+        const row = document.createElement('div');
+        row.className = `node level-${Math.min(level,3)}`;
 
-      const kids = document.createElement('div');
-      kids.className = 'toc-children';
-      g.children.forEach(c => {
+        // Chevron for nodes that have children
+        let chev = null;
+        if(node.children.length){
+          chev = document.createElement('span');
+          chev.className = 'chev';
+          chev.innerHTML = '▾';
+          row.appendChild(chev);
+        }else{
+          const spacer = document.createElement('span');
+          spacer.style.width='16px';
+          row.appendChild(spacer);
+        }
+
         const a = document.createElement('a');
-        a.href = '#' + c.id;
-        a.textContent = c.textContent;
-        kids.appendChild(a);
+        a.href = '#'+node.id; a.textContent = node.text;
+        row.appendChild(a);
+
+        li.appendChild(row);
+        parentUl.appendChild(li);
+
+        if(node.children.length){
+          const childUl = document.createElement('ul');
+          childUl.style.margin=0; childUl.style.padding=0; childUl.hidden = false;
+          li.appendChild(childUl);
+
+          // toggle collapse
+          row.addEventListener('click', (ev)=>{
+            // avoid double handling when clicking link (let it navigate)
+            if(ev.target.tagName.toLowerCase() === 'a') return;
+            childUl.hidden = !childUl.hidden;
+            row.classList.toggle('collapsed', childUl.hidden);
+          });
+
+          renderList(childUl, node.children, level+1);
+        }
       });
-      wrap.appendChild(kids);
+    }
+    renderList(toc, root.children, 1);
 
-      parent.addEventListener('click', e => {
-        if (e.target.tagName !== 'A') wrap.classList.toggle('collapsed');
-      });
-
-      toc.appendChild(wrap);
-    });
-
-    // active section highlighting
-    const map = {};
-    toc.querySelectorAll('a').forEach(a => map[a.getAttribute('href').slice(1)] = a);
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(({target,isIntersecting}) => {
-        const a = map[target.id];
-        if (!a) return;
-        const node = a.parentElement.classList.contains('toc-parent') ? a.parentElement : a.parentElement;
-        (isIntersecting ? node.classList.add : node.classList.remove).call(node.classList,'active');
-      });
-    }, { rootMargin: '-30% 0px -60% 0px', threshold:[0,1] });
-    headings.forEach(h => obs.observe(h));
-
-    // filter
-    const filter = document.getElementById('tocFilter');
-    filter.addEventListener('input', () => {
-      const q = filter.value.toLowerCase();
-      toc.querySelectorAll('.toc-group').forEach(group => {
-        const txt = group.querySelector('.toc-parent a').textContent.toLowerCase();
-        const matchesTop = txt.includes(q);
-        const children = [...group.querySelectorAll('.toc-children a')];
-        const matchesChild = children.some(a => a.textContent.toLowerCase().includes(q));
-        group.style.display = (q ? (matchesTop || matchesChild) : '') ? '' : 'none';
-        if (q && matchesChild) group.classList.remove('collapsed');
-      });
-    });
-
-    // Smooth scroll + hash update
-    toc.addEventListener('click', e => {
-      if (e.target.tagName === 'A') {
-        e.preventDefault();
-        const id = e.target.getAttribute('href').slice(1);
-        document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
-        history.replaceState(null,'','#'+id);
+    // 5) Filter headings
+    const filter = document.getElementById('filter');
+    filter.addEventListener('input', ()=>{
+      const q = filter.value.trim().toLowerCase();
+      for(const li of toc.querySelectorAll('li')){
+        const text = li.querySelector('a')?.textContent.toLowerCase() || '';
+        const match = text.includes(q);
+        li.style.display = match ? '' : 'none';
       }
     });
 
-    // Mobile menu
-    const sidebar = document.getElementById('sidebar');
-    document.getElementById('menuBtn').addEventListener('click', () => {
-      sidebar.classList.toggle('open');
+    // 6) Expand / Collapse all
+    document.getElementById('expandAll').addEventListener('click', ()=>{
+      toc.querySelectorAll('ul').forEach(ul=>ul.hidden=false);
+      toc.querySelectorAll('.node').forEach(n=>n.classList.remove('collapsed'));
     });
-    // close sidebar after clicking a link on mobile
-    toc.addEventListener('click', e => {
-      if (e.target.tagName === 'A') sidebar.classList.remove('open');
+    document.getElementById('collapseAll').addEventListener('click', ()=>{
+      // collapse only sub-lists (not top level)
+      toc.querySelectorAll(':scope > li > ul').forEach(ul=>{
+        // leave top-level open, collapse their children
+        ul.querySelectorAll('ul').forEach(sul=>sul.hidden=true);
+      });
+      toc.querySelectorAll('.node').forEach(n=>n.classList.add('collapsed'));
+      // remove collapsed on top-level rows
+      toc.querySelectorAll(':scope > li > .node').forEach(n=>n.classList.remove('collapsed'));
+    });
+
+    // 7) Active section highlight on scroll
+    const links = Array.from(toc.querySelectorAll('a'));
+    const byId = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        const id = e.target.id;
+        const a = byId.get(id);
+        if(!a) return;
+        if(e.isIntersecting){
+          links.forEach(x=>x.parentElement.classList.remove('active'));
+          a.parentElement.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
+    headings.forEach(h=>{
+      h.classList.add('anchor-highlight');
+      obs.observe(h);
+    });
+
+    // 8) Smooth scroll
+    document.addEventListener('click', (e)=>{
+      const a = e.target.closest('a[href^="#"]');
+      if(!a) return;
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if(target){
+        e.preventDefault();
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+        history.replaceState(null, '', '#'+id);
+      }
     });
   })();
   </script>
 </body>
 </html>
+
