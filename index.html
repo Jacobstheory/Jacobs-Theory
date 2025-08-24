@@ -2,172 +2,284 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Jacob’s Theory — Index</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light dark" />
+  <title>Jacob’s Theory — Phase 1: The Fall</title>
   <style>
-    :root{--bg:#0b0c0f;--panel:#11131a;--elev:#171a23;--text:#e8ecf1;--muted:#a7b0bd;--link:#79b8ff;--border:#252a36;--radius:14px;--shadow:0 8px 24px rgba(0,0,0,.25)}
-    *{box-sizing:border-box}html,body{height:100%}
-    body{margin:0;display:flex;min-height:100%;background:linear-gradient(180deg,#0b0c0f 0%,#0e1117 100%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
-    /* Layout */
-    .sidebar{width:320px;max-width:90vw;padding:18px;background:linear-gradient(180deg,var(--panel) 0%,var(--elev) 100%);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow:auto;box-shadow:var(--shadow)}
-    .main{flex:1;min-width:0;padding:28px clamp(18px,4vw,48px)}
-    /* Brand */
-    .brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}
-    .logo{width:38px;height:38px;border-radius:10px;background:radial-gradient(120% 120% at 20% 20%,#3b82f6 0%,#8b5cf6 45%,#11131a 100%);border:1px solid var(--border)}
-    .brand h1{font-size:18px;margin:0}
-    .muted{color:var(--muted);font-size:13px}
-    /* Downloads */
-    .card{background:linear-gradient(180deg,#0f1320 0%,#0f141c 100%);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
-    .card h2{font-size:14px;margin:0 0 10px 0;letter-spacing:.4px;text-transform:uppercase;color:#cfe3ff}
-    .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btn{display:flex;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#121826;color:var(--text);font-weight:600}
-    .btn:hover{background:#182035}.btn .tag{font-size:12px;color:#cfe3ff}
-    /* List-style nav */
-    .nav{margin-top:8px}
-    .group-title{margin:18px 0 8px;font-weight:800;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:#cfe3ff}
-    .nav ul{list-style:none;margin:0;padding:0 0 8px}
-    .nav li{margin:0}
-    .nav a{display:block;padding:8px 10px;border-radius:10px;font-size:14px}
-    .nav a:hover{background:#141a2a;text-decoration:none}
-    .nav .indent{padding-left:22px}
-    .divider{height:1px;background:var(--border);margin:10px 0}
-    /* Content card */
-    .content-card{max-width:1100px;margin:0 auto;background:linear-gradient(180deg,#0f1320 0%,#0f141c 100%);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+    :root{
+      --bg:#0f1115;--panel:#141821;--ink:#e8eaf0;--muted:#a9b0be;
+      --accent:#66d9ef;--accent-2:#8be9a8;--border:#212634;
+      --link:#8bd5ff;--link-hover:#bce8ff;--active:#1e2635;
+      --chip:#0c0f14;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+      display:grid; grid-template-columns:300px 1fr; min-height:100%;
+    }
+    /* Sidebar */
+    aside{
+      position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
+      background:var(--panel); border-right:1px solid var(--border); padding:14px 12px;
+    }
+    .brand{font-weight:700; letter-spacing:.2px; margin:0 0 10px}
+    .hint{color:var(--muted); font-size:.85rem; margin:2px 0 12px}
+    .controls{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}
+    .btn{
+      background:transparent; color:var(--muted); border:1px solid var(--border);
+      padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem;
+    }
+    .btn:hover{color:var(--ink); border-color:#2a3244}
+    .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
+    nav ul{list-style:none; margin:0; padding:0}
+    nav li{margin:0; padding:0}
+    .node{
+      display:flex; align-items:center; gap:6px; width:100%;
+      padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent;
+    }
+    .node:hover{background:#161c25}
+    .node.active{background:var(--active); border-color:#263043}
+    .node .chev{
+      width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;
+      color:var(--muted); transition:transform .15s ease;
+    }
+    .collapsed>.chev{transform:rotate(-90deg)}
+    .node a{
+      color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .node a:hover{color:var(--link-hover)}
+    .level-1{margin-left:0}
+    .level-2{margin-left:14px}
+    .level-3{margin-left:28px}
+
+    /* Downloads card */
+    .dl-card{
+      border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px;
+      background:linear-gradient(180deg,#121828 0%, #0f1421 100%);
+    }
+    .dl-card h4{margin:0 0 10px 0; font-size:13px; letter-spacing:.4px; text-transform:uppercase; color:#cfe3ff}
+    .dl-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .dl-btn{
+      display:flex; justify-content:center; align-items:center; gap:6px;
+      padding:9px 10px; border-radius:10px; border:1px solid var(--border);
+      background:var(--chip); color:var(--ink); font-weight:600; font-size:.9rem; text-decoration:none;
+    }
+    .dl-btn:hover{background:#131a29}
+    .dl-tag{font-size:.75rem; color:#cfe3ff; opacity:.9}
+
+    /* Content */
+    main{padding:34px 40px; max-width:1100px}
+    main h1, main h2, main h3{scroll-margin-top:18px}
+    main a{color:var(--accent)}
+    hr{border:0; border-top:1px solid var(--border); margin:26px 0}
+
+    /* Responsive */
+    @media (max-width: 880px){
+      body{grid-template-columns:1fr}
+      aside{position:static; height:auto}
+    }
+
+    /* Active-heading side bar highlight */
+    .anchor-highlight{position:relative}
+    .anchor-highlight::before{
+      content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px;
+      background:var(--accent-2); border-radius:3px; opacity:.4;
+    }
   </style>
 </head>
 <body>
-  <aside class="sidebar" aria-label="Navigation">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>Jacob’s Theory</h1>
-        <div class="muted">Master Index & Downloads</div>
-      </div>
-    </div>
+  <aside>
+    <h3 class="brand">Contents</h3>
 
-    <!-- Downloads -->
-    <section class="card" aria-labelledby="downloads-title">
-      <h2 id="downloads-title">Downloads</h2>
+    <!-- DOWNLOADS AT TOP -->
+    <section class="dl-card" aria-labelledby="downloads-title">
+      <h4 id="downloads-title">Downloads</h4>
       <div class="dl-grid">
-        <a class="btn" href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall.pdf" target="_blank" rel="noopener">
-          <span>PDF</span> <span class="tag">Phase 1</span>
+        <a class="dl-btn" href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall.pdf" target="_blank" rel="noopener">
+          <span>PDF</span> <span class="dl-tag">Phase 1</span>
         </a>
-        <a class="btn" href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall%20-%20Unknown.epub" target="_blank" rel="noopener">
-          <span>EPUB</span> <span class="tag">Phase 1</span>
+        <a class="dl-btn" href="Jacobs%20Theory%20-%20Phase%201%20The%20Fall%20-%20Unknown.epub" target="_blank" rel="noopener">
+          <span>EPUB</span> <span class="dl-tag">Phase 1</span>
         </a>
-        <a class="btn" href="content.html" target="_blank" rel="noopener"><span>Full HTML</span></a>
+        <a class="dl-btn" href="content.html" target="_blank" rel="noopener">
+          <span>Full HTML</span>
+        </a>
       </div>
-      <div class="muted" style="margin-top:8px">Files are provided free for critique and archiving.</div>
+      <p class="hint" style="margin:8px 0 0">Files are free to mirror; preserve integrity.</p>
     </section>
 
-    <!-- Flat list navigation -->
-    <nav class="nav">
-      <div class="group-title">Front Matter</div>
-      <ul>
-        <li><a href="content.html#author-s-statement">Author’s Statement</a></li>
-        <li><a href="content.html#reader-orientation">Reader Orientation</a></li>
-        <li><a href="content.html#how-this-work-is-structured">How This Work Is Structured</a></li>
-        <li><a href="content.html#methodical-note-radiocarbon-dating">Radiocarbon Dating Note</a></li>
-        <li><a href="content.html#note-on-language">Note on Resonance</a></li>
-        <li><a href="content.html#introduction">Introduction</a></li>
-        <li><a href="content.html#planetary-disruption-sequence">Planetary Disruption Sequence</a></li>
-        <li><a href="content.html#appendix-symbolic-and-scientific-support">Appendix: Symbolic & Scientific Support</a></li>
-      </ul>
+    <p class="hint">Auto-grouped by H1 → H2 → H3</p>
 
-      <div class="divider"></div>
+    <input id="filter" class="filter" placeholder="Filter headings…" aria-label="Filter headings">
 
-      <div class="group-title">Chapter 1 — The Primordial Earth</div>
-      <ul>
-        <li><a href="content.html#chapter-1-the-primordial-earth">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#the-world-before-the-fracture">The World Before the Fracture</a></li>
-        <li><a class="indent" href="content.html#earth-as-a-coherent-organism">Earth as a Coherent Organism</a></li>
-        <li><a class="indent" href="content.html#key-planetary-conditions-before-the-fracture">Key Planetary Conditions</a></li>
-        <li><a class="indent" href="content.html#a-shattered-coherence">Shattered Coherence</a></li>
-        <li><a class="indent" href="content.html#mythic-memory-and-cosmic-echoes">Mythic Memory & Cosmic Echoes</a></li>
-        <li><a class="indent" href="content.html#closing-summary">Closing Summary</a></li>
-      </ul>
+    <div class="controls">
+      <button class="btn" id="expandAll" type="button">Expand all</button>
+      <button class="btn" id="collapseAll" type="button">Collapse all</button>
+    </div>
 
-      <div class="group-title">Chapter 2 — The Great Impact</div>
-      <ul>
-        <li><a href="content.html#chapter-2-the-great-impact">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#crustal-fracture-field-collapse-and-biospheric-reset">Crustal Fracture & Field Collapse</a></li>
-        <li><a class="indent" href="content.html#forensic-evidence-of-resonance-collapse">Forensic Evidence</a></li>
-        <li><a class="indent" href="content.html#closing-summary-earth-fractured-earth-changed">Closing Summary</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 3 — The Hidden Rift</div>
-      <ul>
-        <li><a href="content.html#chapter-3-the-hidden-rift-from-early-hominins-to-the-rise-of-modern-man">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#from-fracture-to-emergence-resonance-model-restored">From Fracture to Emergence</a></li>
-        <li><a class="indent" href="content.html#post-impact-earth-planetary-conditions">Planetary Conditions</a></li>
-        <li><a class="indent" href="content.html#genetic-clues-the-whisper-of-hybridization">Hybridisation Clues</a></li>
-        <li><a class="indent" href="content.html#mythic-testimony-a-pattern-of-external-intervention">Mythic Testimony</a></li>
-        <li><a class="indent" href="content.html#the-laschamps-event-45000-39000-years-ago-a-cosmic-filter">Laschamps Event</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 4 — Emergence & Ascent</div>
-      <ul>
-        <li><a href="content.html#chapter-4-emergence-and-ascent-humanitys-origins-and-the-rise-of-forgotten-civilizations">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#interlude-the-origins-of-humanity">Origins of Humanity</a></li>
-        <li><a class="indent" href="content.html#symbolic-and-artistic-complexity">Symbolic & Artistic Complexity</a></li>
-        <li><a class="indent" href="content.html#pre-cataclysmic-megalithic-and-resonance-based-civilizations">Pre-Cataclysmic Civilizations</a></li>
-        <li><a class="indent" href="content.html#symbolic-continuity-and-the-echo-of-lost-knowledge">Symbolic Continuity</a></li>
-        <li><a class="indent" href="content.html#final-summary-the-broken-signal-of-the-past">Closing Summary</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 5 — The Fracture of Harmony</div>
-      <ul>
-        <li><a href="content.html#chapter-5-the-fracture-of-harmony-how-jupiter-pulled-the-trigger-on-nemesis">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#the-cosmic-system-before-the-fall">Cosmic System Before the Fall</a></li>
-        <li><a class="indent" href="content.html#the-interference-jupiter-breaks-the-clock">Jupiter Breaks the Clock</a></li>
-        <li><a class="indent" href="content.html#the-first-trauma-the-younger-dryas">Younger Dryas</a></li>
-        <li><a class="indent" href="content.html#the-jupiternemesis-entanglement-how-a-single-encounter-bent-nemesis-into-a-figure-8-and-tore-the-inner-system">Jupiter–Nemesis Entanglement</a></li>
-        <li><a class="indent" href="content.html#the-signal-loss-of-time">Loss of Time & Field Disruption</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 6 — Younger Dryas & Tiamat</div>
-      <ul>
-        <li><a href="content.html#chapter-6-section-1-the-younger-dryas-cataclysm-earths-true-global-reset">SECTION 1: Younger Dryas Reset</a></li>
-        <li><a class="indent" href="content.html#chapter-6-section-2-the-tiamat-event-shattering-of-a-water-world">SECTION 2: Tiamat Event</a></li>
-        <li><a class="indent" href="content.html#chapter-6-section-3-echoes-of-a-celestial-war">SECTION 3: Celestial War Echoes</a></li>
-        <li><a class="indent" href="content.html#chapter-6-section-4-the-aftermath">SECTION 4: Aftermath & Mudflood</a></li>
-        <li><a class="indent" href="content.html#chapter-6-section-5-surviving-the-cataclysm">SECTION 5: Surviving the Cataclysm</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 7 — Moon, Saturn & Factions</div>
-      <ul>
-        <li><a href="content.html#chapter-7-section-1-the-moon">SECTION 1: The Moon</a></li>
-        <li><a class="indent" href="content.html#chapter-7-section-2-the-return-to-saturn">SECTION 2: Return to Saturn</a></li>
-        <li><a class="indent" href="content.html#chapter-7-section-3-enki-and-enlil">SECTION 3: Enki & Enlil</a></li>
-      </ul>
-
-      <div class="group-title">Chapter 8 — What is Life / What is a Human</div>
-      <ul>
-        <li><a href="content.html#chapter-8-what-is-life--what-is-a-human">Chapter Start</a></li>
-        <li><a class="indent" href="content.html#the-three-hard-problems-science-cannot-solve">Three Hard Problems</a></li>
-        <li><a class="indent" href="content.html#the-blueprint-before-the-flesh-dna-as-receiver-not-architect">DNA as Receiver</a></li>
-        <li><a class="indent" href="content.html#the-nature-of-life-resonance-as-the-first-principle">Resonance as First Principle</a></li>
-        <li><a class="indent" href="content.html#the-universal-glow--all-life-emits-light">Universal Glow</a></li>
-        <li><a class="indent" href="content.html#resonance-health-and-human-thought">Resonance, Health & Thought</a></li>
-        <li><a class="indent" href="content.html#the-human-fracture">The Human Fracture</a></li>
-        <li><a class="indent" href="content.html#the-earth-as-womb--the-hidden-keystone-of-suppression">Earth as Womb</a></li>
-        <li><a class="indent" href="content.html#the-cosmological-layer-humanitys-dual-inheritance">Cosmological Layer</a></li>
-        <li><a class="indent" href="content.html#the-seven-bodies-of-the-human">Seven Bodies</a></li>
-        <li><a class="indent" href="content.html#the-fall-by-design">Fall by Design</a></li>
-        <li><a class="indent" href="content.html#what-was-lost">What Was Lost</a></li>
-        <li><a class="indent" href="content.html#the-fractured-races">Fractured Races</a></li>
-        <li><a class="indent" href="content.html#what-we-used-to-look-like">What We Used to Look Like</a></li>
-      </ul>
-    </nav>
+    <nav id="toc" aria-label="Table of contents"><ul></ul></nav>
   </aside>
 
-  <main class="main">
-    <div class="content-card">
-      <h2>Jacob’s Theory — Master Index</h2>
-      <p>Flat list navigation enabled. Links point directly into <code>content.html</code>. Downloads at the top.</p>
-    </div>
+  <main id="content">
+    <!-- Loaded dynamically from content.html -->
+    <p style="color:var(--muted)">Loading content…</p>
   </main>
+
+  <script>
+  (async function(){
+    // 1) Load your book content into the page (so links jump in-place)
+    const host = document.getElementById('content');
+    try{
+      const resp = await fetch('content.html', {cache:'no-store'});
+      const html = await resp.text();
+      host.innerHTML = html;
+    }catch(e){
+      host.innerHTML = "<p style='color:#f88'>Could not load content.html</p>";
+      return;
+    }
+
+    // 2) Collect H1/H2/H3 in order
+    const headings = Array.from(host.querySelectorAll('h1, h2, h3'))
+      .filter(h => h.textContent.trim().length);
+
+    // Give each heading a stable unique ID if it doesn't already have one
+    const slugCounts = new Map();
+    function slugify(str){
+      const base = str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+      const c = slugCounts.get(base) || 0; slugCounts.set(base, c+1);
+      return c ? `${base}-${c}` : base;
+    }
+    headings.forEach(h=>{ if(!h.id){ h.id = slugify(h.textContent.trim()); } });
+
+    // 3) Build nested tree (H1 > H2 > H3)
+    function levelOf(h){ return +h.tagName.substring(1); }
+    const root = { children:[], level:0, text:'ROOT', id:null };
+    let stack = [root];
+    headings.forEach(h=>{
+      const L = levelOf(h);
+      const node = { level:L, text:h.textContent.trim(), id:h.id, children:[] };
+      while(stack.length && stack.at(-1).level >= L){ stack.pop(); }
+      stack.at(-1).children.push(node);
+      stack.push(node);
+    });
+
+    // 4) Render the TOC with collapsible groups
+    const tocUl = document.getElementById('toc').firstElementChild;
+    function render(nodes, level, parentUl){
+      nodes.forEach(node=>{
+        const li = document.createElement('li');
+
+        const row = document.createElement('div');
+        row.className = `node level-${Math.min(level,3)}`;
+
+        // Chevron if there are children
+        let chev = null;
+        if(node.children.length){
+          chev = document.createElement('span');
+          chev.className = 'chev';
+          chev.innerHTML = '▾';
+          row.appendChild(chev);
+        }else{
+          const spacer = document.createElement('span');
+          spacer.style.width='16px';
+          row.appendChild(spacer);
+        }
+
+        // Link
+        const a = document.createElement('a');
+        a.href = '#'+node.id;
+        a.textContent = node.text;
+        row.appendChild(a);
+
+        li.appendChild(row);
+        parentUl.appendChild(li);
+
+        if(node.children.length){
+          const childUl = document.createElement('ul');
+          childUl.style.margin=0; childUl.style.padding=0; childUl.hidden = false;
+          li.appendChild(childUl);
+
+          // toggle collapse when clicking row (not the link)
+          row.addEventListener('click', (ev)=>{
+            if(ev.target.tagName.toLowerCase() === 'a') return; // let links work
+            childUl.hidden = !childUl.hidden;
+            row.classList.toggle('collapsed', childUl.hidden);
+          });
+
+          render(node.children, level+1, childUl);
+        }
+      });
+    }
+    render(root.children, 1, tocUl);
+
+    // 5) Smarter filter: show parents if any child matches
+    const filter = document.getElementById('filter');
+    filter.addEventListener('input', ()=>{
+      const q = filter.value.trim().toLowerCase();
+      function applyFilter(ul){
+        let anyVisible = false;
+        ul.querySelectorAll(':scope > li').forEach(li=>{
+          const a = li.querySelector(':scope > .node a');
+          const childUl = li.querySelector(':scope > ul');
+          const selfMatch = (a?.textContent.toLowerCase() || '').includes(q);
+          let childMatch = false;
+          if(childUl){
+            childMatch = applyFilter(childUl);
+            // auto-open groups when matches are inside
+            if(q) { childUl.hidden = false; li.querySelector(':scope > .node')?.classList.remove('collapsed'); }
+          }
+          const visible = !q || selfMatch || childMatch;
+          li.style.display = visible ? '' : 'none';
+          anyVisible = anyVisible || visible;
+        });
+        return anyVisible;
+      }
+      applyFilter(tocUl);
+    });
+
+    // 6) Expand / Collapse all
+    document.getElementById('expandAll').addEventListener('click', ()=>{
+      tocUl.querySelectorAll('ul').forEach(ul=>ul.hidden=false);
+      tocUl.querySelectorAll('.node').forEach(n=>n.classList.remove('collapsed'));
+    });
+    document.getElementById('collapseAll').addEventListener('click', ()=>{
+      tocUl.querySelectorAll(':scope > li > ul').forEach(ul=>{
+        ul.querySelectorAll('ul').forEach(sul=>sul.hidden=true);
+      });
+      tocUl.querySelectorAll('.node').forEach(n=>n.classList.add('collapsed'));
+      tocUl.querySelectorAll(':scope > li > .node').forEach(n=>n.classList.remove('collapsed'));
+    });
+
+    // 7) Active section highlight on scroll
+    const links = Array.from(tocUl.querySelectorAll('a'));
+    const byId = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        const id = e.target.id;
+        const a = byId.get(id);
+        if(!a) return;
+        if(e.isIntersecting){
+          links.forEach(x=>x.parentElement.classList.remove('active'));
+          a.parentElement.classList.add('active');
+        }
+      });
+    }, { rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
+    headings.forEach(h=>{ h.classList.add('anchor-highlight'); obs.observe(h); });
+
+    // 8) Smooth in-page scroll (no leaving index layout)
+    document.addEventListener('click', (e)=>{
+      const a = e.target.closest('a[href^="#"]');
+      if(!a) return;
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if(target){
+        e.preventDefault();
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+        history.replaceState(null, '', '#'+id);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
