@@ -10,12 +10,11 @@
       --bg:#0f1115;--panel:#141821;--ink:#e8eaf0;--muted:#a9b0be;
       --accent:#66d9ef;--accent-2:#8be9a8;--border:#212634;
       --link:#8bd5ff;--link-hover:#bce8ff;--active:#1e2635;
-      /* fluid sidebar */
-      --sidebar: clamp(240px, 22vw, 320px);
+      --sidebar: clamp(240px, 22vw, 320px);      /* fluid sidebar width */
     }
     *{box-sizing:border-box}
 
-    /* frame: keep window static; only main scrolls (desktop) */
+    /* Frame (desktop): window static; only main scrolls */
     html,body{
       height:100%;
       overflow:hidden;
@@ -24,7 +23,7 @@
       font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
     }
 
-    /* sidebar */
+    /* Sidebar */
     aside{
       position:fixed; left:0; top:0; bottom:0; width:var(--sidebar);
       background:var(--panel); border-right:1px solid var(--border);
@@ -33,53 +32,59 @@
     .brand{font-weight:700; letter-spacing:.2px; margin:0 0 6px}
     .hint{color:var(--muted); font-size:.85rem; margin:0 0 12px}
 
-    /* downloads (simple) */
+    /* Downloads (simple links) */
     .downloads{margin:10px 0 14px}
     .downloads h4{margin:0 0 6px; font-size:.9rem; letter-spacing:.3px; color:#cfe3ff}
     .downloads ul{list-style:disc; padding-left:18px; margin:6px 0 0}
     .downloads a{color:var(--link); text-decoration:none}
     .downloads a:hover{color:var(--link-hover); text-decoration:underline}
 
-    /* controls + filter */
+    /* Controls + filter */
     .controls{display:flex; gap:8px; margin:10px 0; flex-wrap:wrap}
     .btn{background:transparent; color:var(--muted); border:1px solid var(--border); padding:6px 8px; border-radius:8px; cursor:pointer; font-size:.85rem}
     .btn:hover{color:var(--ink); border-color:#2a3244}
     .filter{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0c0f14; color:var(--ink); margin-bottom:10px}
 
     /* TOC */
-    nav#toc{flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding-right:6px}
+    nav#toc{flex:1; min-height:0; overflow:auto; padding-right:6px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
     nav ul{list-style:none; margin:0; padding:0}
     nav li{margin:0; padding:0}
     .node{display:flex; align-items:center; gap:6px; width:100%; padding:6px 6px; border-radius:8px; cursor:pointer; border:1px solid transparent}
     .node:hover{background:#161c25}
     .node.active{background:var(--active); border-color:#263043}
-    .node .chev{width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); transition:transform .15s}
+    .node .chev{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .15s}
     .collapsed>.chev{transform:rotate(-90deg)}
     .node a{color:var(--link); text-decoration:none; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .node a:hover{color:var(--link-hover)}
     .level-1{margin-left:0} .level-2{margin-left:14px} .level-3{margin-left:28px}
 
-    /* content (desktop): fill all remaining width; only this scrolls */
+    /* Content pane: fill remaining width (no right bar); only this scrolls */
     main{
       position:relative;
       margin-left:var(--sidebar);
-      height:100svh; overflow:auto;
+      height:100svh; overflow:auto; -webkit-overflow-scrolling:touch;
       padding:34px 40px;
-      width:calc(100dvw - var(--sidebar)); /* remove right “bar” */
+      width:calc(100vw - var(--sidebar));
       max-width:none; margin-right:0;
       scroll-behavior:smooth;
-      -webkit-overflow-scrolling:touch;
     }
     main h1,main h2,main h3{scroll-margin-top:18px}
     main a{color:var(--accent)}
     hr{border:0; border-top:1px solid var(--border); margin:26px 0}
 
-    /* heading highlight line */
+    /* Heading highlight line */
     .anchor-highlight{position:relative}
     .anchor-highlight::before{content:""; position:absolute; left:-14px; top:9px; bottom:9px; width:3px; background:var(--accent-2); border-radius:3px; opacity:.4}
 
-    /* mobile / narrow tablets: stacked + page scroll */
+    /* Auto stacked mode when narrow (variable-based) */
     @media (max-width: calc(700px + var(--sidebar))) {
+      html,body{overflow:auto}
+      aside{position:static; width:auto; height:auto}
+      nav#toc{max-height:50vh}
+      main{margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible}
+    }
+    /* Fallback stacked mode for older mobile browsers (no CSS var math in MQ) */
+    @media (max-width: 1024px) {
       html,body{overflow:auto}
       aside{position:static; width:auto; height:auto}
       nav#toc{max-height:50vh}
@@ -114,167 +119,166 @@
     <p style="color:#a9b0be">Loading content…</p>
   </main>
 
-  <script>
-  (async function(){
-    const host = document.getElementById('content');
-    try{
-      const resp = await fetch('content.html', {cache:'no-store'});
-      host.innerHTML = await resp.text();
-    }catch(e){
-      host.innerHTML = "<p style='color:#f88'>Could not load content.html</p>";
-      return;
-    }
+<script>
+(async function(){
+  const host = document.getElementById('content');
+  try{
+    const resp = await fetch('content.html', {cache:'no-store'});
+    host.innerHTML = await resp.text();
+  }catch(e){
+    host.innerHTML = "<p style='color:#f88'>Could not load content.html</p>";
+    return;
+  }
 
-    /* collect headings + ensure IDs */
-    const headings = Array.from(host.querySelectorAll('h1,h2,h3')).filter(h=>h.textContent.trim());
-    const slugCounts = new Map();
-    const slugify = s => {
-      const base = s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-      const n = slugCounts.get(base)||0; slugCounts.set(base,n+1);
-      return n ? `${base}-${n}` : base;
-    };
-    headings.forEach(h => { if(!h.id) h.id = slugify(h.textContent.trim()); });
+  /* Gather headings and ensure stable IDs */
+  const headings = Array.from(host.querySelectorAll('h1,h2,h3')).filter(h=>h.textContent.trim());
+  const slugCounts = new Map();
+  const slugify = s=>{
+    const base = s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const n = slugCounts.get(base)||0; slugCounts.set(base,n+1);
+    return n ? `${base}-${n}` : base;
+  };
+  headings.forEach(h=>{ if(!h.id) h.id = slugify(h.textContent.trim()); });
 
-    /* build tree H1>H2>H3 */
-    const levelOf = h => +h.tagName.substring(1);
-    const root = {children:[], level:0}; let stack=[root];
-    headings.forEach(h=>{
-      const L=levelOf(h), node={level:L,text:h.textContent.trim(),id:h.id,children:[]};
-      while(stack.length && stack.at(-1).level>=L) stack.pop();
-      stack.at(-1).children.push(node); stack.push(node);
-    });
+  /* Build H1 > H2 > H3 tree */
+  const levelOf = h => +h.tagName.substring(1);
+  const root = {children:[], level:0}; let stack=[root];
+  headings.forEach(h=>{
+    const L = levelOf(h);
+    const node = {level:L, text:h.textContent.trim(), id:h.id, children:[]};
+    while(stack.length && stack.at(-1).level >= L) stack.pop();
+    stack.at(-1).children.push(node);
+    stack.push(node);
+  });
 
-    /* render TOC */
-    const tocUl = document.getElementById('toc').firstElementChild;
-    function render(nodes, level, parentUl){
-      nodes.forEach(node=>{
-        const li=document.createElement('li');
-        const row=document.createElement('div');
-        row.className=`node level-${Math.min(level,3)}`;
+  /* Render TOC */
+  const tocUl = document.getElementById('toc').firstElementChild;
+  function render(nodes, level, parentUl){
+    nodes.forEach(node=>{
+      const li = document.createElement('li');
+      const row = document.createElement('div');
+      row.className = `node level-${Math.min(level,3)}`;
 
-        if(node.children.length){
-          const chev=document.createElement('span'); chev.className='chev'; chev.textContent='▾'; row.appendChild(chev);
-        } else {
-          const spacer=document.createElement('span'); spacer.style.width='16px'; row.appendChild(spacer);
-        }
+      if(node.children.length){
+        const chev = document.createElement('span');
+        chev.className = 'chev'; chev.textContent = '▾';
+        row.appendChild(chev);
+      }else{
+        const spacer = document.createElement('span');
+        spacer.style.width = '16px';
+        row.appendChild(spacer);
+      }
 
-        const a=document.createElement('a'); a.href='#'+node.id; a.textContent=node.text; row.appendChild(a);
-        li.appendChild(row); parentUl.appendChild(li);
+      const a = document.createElement('a');
+      a.href = '#'+node.id; a.textContent = node.text;
+      row.appendChild(a);
+      li.appendChild(row); parentUl.appendChild(li);
 
-        if(node.children.length){
-          const childUl=document.createElement('ul'); childUl.hidden=false; li.appendChild(childUl);
-          row.addEventListener('click', ev=>{
-            if(ev.target.tagName.toLowerCase()==='a') return; /* let links navigate */
-            childUl.hidden=!childUl.hidden; row.classList.toggle('collapsed', childUl.hidden);
-          });
-          render(node.children, level+1, childUl);
-        }
-      });
-    }
-    render(root.children, 1, tocUl);
-
-    /* filter with parent preservation */
-    const filter = document.getElementById('filter');
-    filter.addEventListener('input', ()=>{
-      const q = filter.value.trim().toLowerCase();
-      function apply(ul){
-        let any=false;
-        Array.from(ul.children).forEach(li=>{
-          if(li.tagName!=='LI') return;
-          let row=null, childUl=null;
-          for(const el of li.children){ if(el.classList?.contains('node')) row=el; if(el.tagName==='UL') childUl=el; }
-          const a=row?.querySelector('a');
-          const self=(a?.textContent.toLowerCase()||'').includes(q);
-          let child=false;
-          if(childUl){ child=apply(childUl); if(q){ childUl.hidden=false; row?.classList.remove('collapsed'); } }
-          const show=!q || self || child;
-          li.style.display=show?'':'none'; any=any||show;
+      if(node.children.length){
+        const childUl = document.createElement('ul');
+        childUl.hidden = false; li.appendChild(childUl);
+        row.addEventListener('click', ev=>{
+          if(ev.target.tagName.toLowerCase()==='a') return; // let links navigate
+          childUl.hidden = !childUl.hidden;
+          row.classList.toggle('collapsed', childUl.hidden);
         });
-        return any;
+        render(node.children, level+1, childUl);
       }
-      apply(tocUl);
     });
+  }
+  render(root.children, 1, tocUl);
 
-    /* expand/collapse helpers */
-    function topLevelItems(){
-      return Array.from(tocUl.children).filter(el=>el.tagName==='LI');
-    }
-    function allDescendantUls(rootLi){
-      return Array.from(rootLi.querySelectorAll('ul'));
-    }
-    function findRow(li){
-      return Array.from(li.children).find(el=>el.classList && el.classList.contains('node')) || null;
-    }
-
-    /* Expand All */
-    document.getElementById('expandAll').addEventListener('click', ()=>{
-      topLevelItems().forEach(li=>{
-        allDescendantUls(li).forEach(ul=>ul.hidden=false);
-        li.querySelectorAll('.node').forEach(row=>row.classList.remove('collapsed'));
+  /* Filter (keeps parents if child matches) */
+  const filter = document.getElementById('filter');
+  filter.addEventListener('input', ()=>{
+    const q = filter.value.trim().toLowerCase();
+    function apply(ul){
+      let any=false;
+      Array.from(ul.children).forEach(li=>{
+        if(li.tagName!=='LI') return;
+        let row=null, childUl=null;
+        for(const el of li.children){ if(el.classList?.contains('node')) row=el; if(el.tagName==='UL') childUl=el; }
+        const a=row?.querySelector('a');
+        const self=(a?.textContent.toLowerCase()||'').includes(q);
+        let child=false;
+        if(childUl){ child=apply(childUl); if(q){ childUl.hidden=false; row?.classList.remove('collapsed'); } }
+        const show=!q || self || child;
+        li.style.display=show?'':'none'; any=any||show;
       });
+      return any;
+    }
+    apply(tocUl);
+  });
+
+  /* Expand All */
+  document.getElementById('expandAll').addEventListener('click', ()=>{
+    tocUl.querySelectorAll('ul').forEach(ul=>ul.hidden=false);
+    tocUl.querySelectorAll('.node').forEach(row=>row.classList.remove('collapsed'));
+  });
+
+  /* Collapse All → show ONLY H1 rows (hide every nested UL) */
+  document.getElementById('collapseAll').addEventListener('click', ()=>{
+    // hide all child ULs (including each H1's direct UL)
+    tocUl.querySelectorAll('ul').forEach(ul=>{
+      if(ul!==tocUl) ul.hidden = true;
     });
-
-    /* Collapse All → keep only H1s visible (their direct ULs open, deeper closed) */
-    document.getElementById('collapseAll').addEventListener('click', ()=>{
-      topLevelItems().forEach(li=>{
-        // hide all nested Uls
-        allDescendantUls(li).forEach(ul=>ul.hidden=true);
-        // re-open direct child UL of the top-level item (the H2 list)
-        const directUl = Array.from(li.children).find(el=>el.tagName==='UL');
-        if(directUl) directUl.hidden=false;
-        // set collapsed on all rows under this li, then un-collapse the top row
-        li.querySelectorAll('.node').forEach(row=>row.classList.add('collapsed'));
-        const topRow = findRow(li);
-        if(topRow) topRow.classList.remove('collapsed');
-      });
-    });
-
-    /* active-section highlight (use main as root in desktop; window in stacked) */
-    function getScrollRoot(){
-      const style=getComputedStyle(host);
-      const mainScrolls=(host.scrollHeight>host.clientHeight) && (style.overflowY==='auto'||style.overflowY==='scroll');
-      return mainScrolls ? host : null;
-    }
-    const links = Array.from(document.querySelectorAll('#toc a'));
-    const byId = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
-    const observer = new IntersectionObserver(entries=>{
-      entries.forEach(e=>{
-        const a=byId.get(e.target.id); if(!a) return;
-        if(e.isIntersecting){
-          links.forEach(x=>x.parentElement.classList.remove('active'));
-          a.parentElement.classList.add('active');
-        }
-      });
-    }, { root:getScrollRoot(), rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
-    headings.forEach(h=>{ h.classList.add('anchor-highlight'); observer.observe(h); });
-
-    /* smooth scroll that picks correct scroller (main vs window) */
-    (function(){
-      function scrollToEl(el){
-        const root = getScrollRoot();  // null means window
-        const offset = 12;
-        if(root){
-          const top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - offset;
-          root.scrollTo({top, behavior:'smooth'});
-        }else{
-          const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
-          window.scrollTo({top, behavior:'smooth'});
-        }
+    // set chevrons to collapsed for anything that has children
+    tocUl.querySelectorAll('li').forEach(li=>{
+      let row=null, directUl=null;
+      for(const el of li.children){
+        if(el.classList?.contains('node')) row=el;
+        if(el.tagName==='UL'){ directUl=el; break; }
       }
-      document.addEventListener('click', e=>{
-        const a=e.target.closest('a[href^="#"]'); if(!a) return;
-        const id=a.getAttribute('href').slice(1);
-        const t=document.getElementById(id); if(!t) return;
-        e.preventDefault();
-        history.replaceState(null,'','#'+id);
-        scrollToEl(t);
-      });
-      if(location.hash){
-        const t=document.getElementById(location.hash.slice(1));
-        if(t) setTimeout(()=>scrollToEl(t),0);
+      if(row) row.classList.toggle('collapsed', !!directUl);
+    });
+  });
+
+  /* Active-section highlight — use main as root when it scrolls; else window */
+  function getScrollRoot(){
+    const style=getComputedStyle(host);
+    const mainScrolls=(host.scrollHeight>host.clientHeight) && (style.overflowY==='auto' || style.overflowY==='scroll');
+    return mainScrolls ? host : null;
+  }
+  const links = Array.from(document.querySelectorAll('#toc a'));
+  const byId = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      const a=byId.get(e.target.id); if(!a) return;
+      if(e.isIntersecting){
+        links.forEach(x=>x.parentElement.classList.remove('active'));
+        a.parentElement.classList.add('active');
       }
-    })();
+    });
+  }, { root:getScrollRoot(), rootMargin:'-40% 0px -55% 0px', threshold:[0,1] });
+  headings.forEach(h=>{ h.classList.add('anchor-highlight'); observer.observe(h); });
+
+  /* Smooth scroll that picks correct scroller (main vs window) */
+  (function(){
+    function scrollToEl(el){
+      const root = getScrollRoot();  // null => window
+      const offset = 12;
+      if(root){
+        const top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - offset;
+        root.scrollTo({top, behavior:'smooth'});
+      }else{
+        const top = el.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop) - offset;
+        window.scrollTo({top, behavior:'smooth'});
+      }
+    }
+    document.addEventListener('click', e=>{
+      const a=e.target.closest('a[href^="#"]'); if(!a) return;
+      const id=a.getAttribute('href').slice(1);
+      const t=document.getElementById(id); if(!t) return;
+      e.preventDefault();
+      history.replaceState(null,'','#'+id);
+      scrollToEl(t);
+    });
+    if(location.hash){
+      const t=document.getElementById(location.hash.slice(1));
+      if(t) setTimeout(()=>scrollToEl(t), 0);
+    }
   })();
-  </script>
+})();
+</script>
 </body>
 </html>
