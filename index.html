@@ -87,9 +87,23 @@
     @media (max-width: 1024px) {
       html,body{overflow:auto}
       aside{position:static; width:auto; height:auto}
-      nav#toc{max-height:50vh}
+           nav#toc{max-height:50vh}
       main{margin-left:0; width:100%; max-width:100%; height:auto; overflow:visible}
     }
+    .nav-author {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--muted);
+  margin-top: 16px;
+}
+.nav-author hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+.nav-author strong { color: var(--ink); }
+.nav-author .muted { font-style: italic; }
   </style>
 </head>
 <body>
@@ -122,8 +136,14 @@
     </li>
   </ul>
 </nav>
+    <!-- Author credit -->
+    <div class="nav-author">
+      <hr>
+      <p><strong>Jacob’s Theory</strong><br>
+      by Jacob Wilson<br>
+      <span class="muted">© 2025 • Free to share with credit</span></p>
+    </div>
   </aside>
-
   <main id="content">
     <p style="color:#a9b0be">Loading content…</p>
   </main>
@@ -291,4 +311,5 @@
 </script>
 </body>
 </html>
+
 
